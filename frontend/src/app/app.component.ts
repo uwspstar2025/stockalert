@@ -11,6 +11,7 @@ import { Component } from '@angular/core';
           <router-outlet></router-outlet>
         </main>
       </div>
+      <app-chatbot></app-chatbot>
     </div>
   `,
   styleUrls: ['./app.component.scss']

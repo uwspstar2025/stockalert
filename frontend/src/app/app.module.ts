@@ -28,6 +28,7 @@ import { NavigationComponent } from './components/navigation/navigation.componen
 import { StrategySelectionComponent } from './components/strategy-selection/strategy-selection.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { HelpComponent } from './components/help/help.component';
+import { ChatbotComponent } from './components/chatbot/chatbot.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/strategy-selection', pathMatch: 'full' },
@@ -51,7 +52,8 @@ const routes: Routes = [
     AlertsComponent,
     NavigationComponent,
     SidebarComponent,
-    HelpComponent
+    HelpComponent,
+    ChatbotComponent
   ],
   imports: [
     BrowserModule,

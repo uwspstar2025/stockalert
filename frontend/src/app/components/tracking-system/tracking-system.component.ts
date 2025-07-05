@@ -21,7 +21,12 @@ import { StockService } from '../../services/stock.service';
 
       <div class="alert-banner success" *ngIf="!connectionError && !loading">
         <mat-icon>check_circle</mat-icon>
-        <span>数据连接正常</span>
+        <span>数据连接正常 - 最后更新: {{ lastUpdate }}</span>
+      </div>
+
+      <div class="alert-banner warning" *ngIf="loading">
+        <mat-icon>sync</mat-icon>
+        <span>正在获取股票数据...</span>
       </div>
 
       <div class="strategy-card">
@@ -43,9 +48,35 @@ import { StockService } from '../../services/stock.service';
           <div class="status-icon">
             <mat-icon>bar_chart</mat-icon>
           </div>
-          <div class="status-text">
+          <div class="status-text" *ngIf="stockData.length === 0">
             <h3>暂无数据配置</h3>
             <p>请在右侧添加股票并开启数据流服务</p>
+          </div>
+          <div class="status-text" *ngIf="stockData.length > 0">
+            <h3>监控系统运行中</h3>
+            <p>正在监控 {{ stockData.length }} 只股票</p>
+          </div>
+        </div>
+
+        <!-- Stock monitoring grid -->
+        <div class="stock-grid" *ngIf="stockData.length > 0">
+          <div class="stock-item" *ngFor="let stock of stockData">
+            <div class="stock-header">
+              <h4>{{ stock.symbol }}</h4>
+              <div class="price" [class.positive]="stock.change > 0" [class.negative]="stock.change < 0">
+                ¥{{ stock.price }}
+              </div>
+            </div>
+            <div class="stock-info">
+              <div class="company-name">{{ stock.name }}</div>
+              <div class="change" [class.positive]="stock.change > 0" [class.negative]="stock.change < 0">
+                {{ stock.change > 0 ? '+' : '' }}{{ stock.change }}%
+              </div>
+            </div>
+            <div class="monitoring-status">
+              <mat-icon>radio_button_checked</mat-icon>
+              <span>监控中</span>
+            </div>
           </div>
         </div>
 
@@ -63,6 +94,8 @@ import { StockService } from '../../services/stock.service';
 export class TrackingSystemComponent implements OnInit {
   connectionError = false;
   loading = false;
+  stockData: any[] = [];
+  lastUpdate: string = '';
 
   constructor(
     private router: Router,
@@ -71,6 +104,10 @@ export class TrackingSystemComponent implements OnInit {
 
   ngOnInit() {
     this.checkConnection();
+    // Set up periodic updates every 30 seconds
+    setInterval(() => {
+      this.checkConnection();
+    }, 30000);
   }
 
   checkConnection() {
@@ -79,7 +116,9 @@ export class TrackingSystemComponent implements OnInit {
       next: (response) => {
         this.connectionError = false;
         this.loading = false;
-        console.log('Stock data loaded successfully');
+        this.stockData = response.data || [];
+        this.lastUpdate = new Date().toLocaleTimeString('zh-CN');
+        console.log('Stock data loaded successfully', response);
       },
       error: (err) => {
         this.connectionError = true;
