@@ -18,7 +18,7 @@ interface Stock {
   template: `
     <div class="container">
       <div class="header">
-        <h1>🏦 选择要监控的股票</h1>
+        <h1>选择要监控的股票</h1>
         <p>选择你想要监控交易的股票代码，开始你的智能投资之旅</p>
       </div>
 

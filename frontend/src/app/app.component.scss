@@ -1,11 +1,27 @@
+// App Component - Layout with Sidebar
 .app-container {
   min-height: 100vh;
   display: flex;
+  background: var(--bg-primary);
+}
+
+.main-layout {
+  flex: 1;
+  margin-left: 80px; // Account for sidebar width
+  display: flex;
   flex-direction: column;
+  transition: margin-left 0.3s ease;
 }
 
 .main-content {
   flex: 1;
-  padding: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--bg-primary);
+  overflow-x: hidden;
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .main-layout {
+    margin-left: 60px; // Smaller sidebar on mobile
+  }
 }

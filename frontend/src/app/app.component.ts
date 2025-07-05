@@ -4,10 +4,13 @@ import { Component } from '@angular/core';
   selector: 'app-root',
   template: `
     <div class="app-container">
-      <app-navigation></app-navigation>
-      <main class="main-content">
-        <router-outlet></router-outlet>
-      </main>
+      <app-sidebar></app-sidebar>
+      <div class="main-layout">
+        <app-navigation></app-navigation>
+        <main class="main-content">
+          <router-outlet></router-outlet>
+        </main>
+      </div>
     </div>
   `,
   styleUrls: ['./app.component.scss']

@@ -26,15 +26,18 @@ import { AnalysisComponent } from './components/analysis/analysis.component';
 import { AlertsComponent } from './components/alerts/alerts.component';
 import { NavigationComponent } from './components/navigation/navigation.component';
 import { StrategySelectionComponent } from './components/strategy-selection/strategy-selection.component';
+import { SidebarComponent } from './components/sidebar/sidebar.component';
+import { HelpComponent } from './components/help/help.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: '/stock-selection', pathMatch: 'full' },
-  { path: 'stock-selection', component: StockSelectionComponent },
+  { path: '', redirectTo: '/strategy-selection', pathMatch: 'full' },
   { path: 'strategy-selection', component: StrategySelectionComponent },
-  { path: 'tracking-system', component: TrackingSystemComponent },
+  { path: 'stock-selection', component: StockSelectionComponent },
   { path: 'portfolio', component: PortfolioComponent },
+  { path: 'tracking', component: TrackingSystemComponent },
   { path: 'analysis', component: AnalysisComponent },
-  { path: 'alerts', component: AlertsComponent }
+  { path: 'alerts', component: AlertsComponent },
+  { path: 'help', component: HelpComponent }
 ];
 
 @NgModule({
@@ -46,7 +49,9 @@ const routes: Routes = [
     PortfolioComponent,
     AnalysisComponent,
     AlertsComponent,
-    NavigationComponent
+    NavigationComponent,
+    SidebarComponent,
+    HelpComponent
   ],
   imports: [
     BrowserModule,
