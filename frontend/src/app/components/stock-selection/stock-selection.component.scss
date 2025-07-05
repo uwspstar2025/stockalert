@@ -175,6 +175,50 @@
   }
 }
 
+// Loading and Error States
+.loading-state, .error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 40px;
+  text-align: center;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 40px;
+}
+
+.loading-spinner {
+  font-size: 48px;
+  margin-bottom: 20px;
+  animation: spin 1s linear infinite;
+  color: var(--accent-blue);
+}
+
+.loading-state p {
+  color: var(--text-secondary);
+  font-size: 16px;
+}
+
+.error-state {
+  .error-icon {
+    font-size: 48px;
+    margin-bottom: 20px;
+  }
+  
+  h3 {
+    color: var(--error-color);
+    margin-bottom: 20px;
+    font-size: 18px;
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 @media (max-width: 768px) {
   .stocks-grid {
     grid-template-columns: 1fr;

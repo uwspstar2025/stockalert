@@ -25,7 +25,7 @@ import { Router } from '@angular/router';
                [class.completed]="currentStep > 2"
                (click)="navigateToStep(2)">
             <div class="step-number">2</div>
-            <span>监控系统</span>
+            <span>选择策略</span>
           </div>
           
           <div class="step" 
@@ -33,7 +33,7 @@ import { Router } from '@angular/router';
                [class.completed]="currentStep > 3"
                (click)="navigateToStep(3)">
             <div class="step-number">3</div>
-            <span>投资组合</span>
+            <span>监控系统</span>
           </div>
           
           <div class="step" 
@@ -41,13 +41,21 @@ import { Router } from '@angular/router';
                [class.completed]="currentStep > 4"
                (click)="navigateToStep(4)">
             <div class="step-number">4</div>
+            <span>投资组合</span>
+          </div>
+          
+          <div class="step" 
+               [class.active]="currentStep === 5" 
+               [class.completed]="currentStep > 5"
+               (click)="navigateToStep(5)">
+            <div class="step-number">5</div>
             <span>AI分析</span>
           </div>
           
           <div class="step" 
-               [class.active]="currentStep === 5"
-               (click)="navigateToStep(5)">
-            <div class="step-number">5</div>
+               [class.active]="currentStep === 6"
+               (click)="navigateToStep(6)">
+            <div class="step-number">6</div>
             <span>价格提醒</span>
           </div>
         </div>
@@ -70,15 +78,18 @@ export class NavigationComponent {
         this.router.navigate(['/stock-selection']);
         break;
       case 2:
-        this.router.navigate(['/tracking-system']);
+        this.router.navigate(['/strategy-selection']);
         break;
       case 3:
-        this.router.navigate(['/portfolio']);
+        this.router.navigate(['/tracking-system']);
         break;
       case 4:
-        this.router.navigate(['/analysis']);
+        this.router.navigate(['/portfolio']);
         break;
       case 5:
+        this.router.navigate(['/analysis']);
+        break;
+      case 6:
         this.router.navigate(['/alerts']);
         break;
     }
@@ -87,9 +98,10 @@ export class NavigationComponent {
   private updateCurrentStep() {
     const url = this.router.url;
     if (url.includes('stock-selection')) this.currentStep = 1;
-    else if (url.includes('tracking-system')) this.currentStep = 2;
-    else if (url.includes('portfolio')) this.currentStep = 3;
-    else if (url.includes('analysis')) this.currentStep = 4;
-    else if (url.includes('alerts')) this.currentStep = 5;
+    else if (url.includes('strategy-selection')) this.currentStep = 2;
+    else if (url.includes('tracking-system')) this.currentStep = 3;
+    else if (url.includes('portfolio')) this.currentStep = 4;
+    else if (url.includes('analysis')) this.currentStep = 5;
+    else if (url.includes('alerts')) this.currentStep = 6;
   }
 }

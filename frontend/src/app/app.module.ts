@@ -25,10 +25,12 @@ import { PortfolioComponent } from './components/portfolio/portfolio.component';
 import { AnalysisComponent } from './components/analysis/analysis.component';
 import { AlertsComponent } from './components/alerts/alerts.component';
 import { NavigationComponent } from './components/navigation/navigation.component';
+import { StrategySelectionComponent } from './components/strategy-selection/strategy-selection.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/stock-selection', pathMatch: 'full' },
   { path: 'stock-selection', component: StockSelectionComponent },
+  { path: 'strategy-selection', component: StrategySelectionComponent },
   { path: 'tracking-system', component: TrackingSystemComponent },
   { path: 'portfolio', component: PortfolioComponent },
   { path: 'analysis', component: AnalysisComponent },
@@ -39,6 +41,7 @@ const routes: Routes = [
   declarations: [
     AppComponent,
     StockSelectionComponent,
+    StrategySelectionComponent,
     TrackingSystemComponent,
     PortfolioComponent,
     AnalysisComponent,

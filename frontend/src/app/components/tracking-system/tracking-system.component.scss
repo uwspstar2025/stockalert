@@ -58,6 +58,16 @@
       font-size: 18px;
     }
   }
+  
+  &.success {
+    background: rgba(78, 201, 176, 0.2);
+    border-color: var(--success-color);
+    color: var(--success-color);
+    
+    mat-icon {
+      color: var(--success-color);
+    }
+  }
 }
 
 .strategy-card {

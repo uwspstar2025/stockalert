@@ -8,6 +8,7 @@ require("dotenv").config();
 const stockRoutes = require("./routes/stocks");
 const alertRoutes = require("./routes/alerts");
 const userRoutes = require("./routes/users");
+const strategiesRoutes = require("./routes/strategies");
 const { initializeWebSocket } = require("./services/websocket");
 
 const app = express();
@@ -17,8 +18,21 @@ const PORT = process.env.PORT || 3000;
 app.use(helmet());
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:4200",
+    origin: [
+      process.env.FRONTEND_URL || "http://localhost:4200",
+      "http://localhost:4200",
+      "http://127.0.0.1:4200",
+      "http://localhost:63458", // 备用端口
+    ],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Origin",
+      "X-Requested-With",
+      "Accept",
+    ],
   })
 );
 
@@ -40,6 +54,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/stocks", stockRoutes);
 app.use("/api/alerts", alertRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/strategies", strategiesRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {

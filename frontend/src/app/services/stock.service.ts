@@ -46,4 +46,9 @@ export class StockService {
   getSelectedStocks(): Stock[] {
     return this.selectedStocksSubject.value;
   }
+
+  // Health check method
+  checkApiHealth(): Observable<any> {
+    return this.http.get(`${this.apiUrl.replace('/api', '')}/health`);
+  }
 }

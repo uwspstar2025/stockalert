@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { StockService } from '../../services/stock.service';
 
 @Component({
   selector: 'app-tracking-system',
@@ -10,12 +11,17 @@ import { Router } from '@angular/router';
         <p>监控1只股票-经典4%-20%策略</p>
       </div>
 
-      <div class="alert-banner">
+      <div class="alert-banner" *ngIf="connectionError">
         <mat-icon>error</mat-icon>
         <span>获取股票数据失败，请检查网络连接</span>
         <button class="close-btn" (click)="dismissAlert()">
           <mat-icon>close</mat-icon>
         </button>
+      </div>
+
+      <div class="alert-banner success" *ngIf="!connectionError && !loading">
+        <mat-icon>check_circle</mat-icon>
+        <span>数据连接正常</span>
       </div>
 
       <div class="strategy-card">
@@ -54,15 +60,41 @@ import { Router } from '@angular/router';
   `,
   styleUrls: ['./tracking-system.component.scss']
 })
-export class TrackingSystemComponent {
-  constructor(private router: Router) {}
+export class TrackingSystemComponent implements OnInit {
+  connectionError = false;
+  loading = false;
+
+  constructor(
+    private router: Router,
+    private stockService: StockService
+  ) {}
+
+  ngOnInit() {
+    this.checkConnection();
+  }
+
+  checkConnection() {
+    this.loading = true;
+    this.stockService.getAllStocks().subscribe({
+      next: (response) => {
+        this.connectionError = false;
+        this.loading = false;
+        console.log('Stock data loaded successfully');
+      },
+      error: (err) => {
+        this.connectionError = true;
+        this.loading = false;
+        console.error('Failed to load stock data:', err);
+      }
+    });
+  }
 
   dismissAlert() {
-    // Logic to dismiss alert
+    this.connectionError = false;
   }
 
   restartService() {
-    // Logic to restart service
     console.log('Restarting service...');
+    this.checkConnection();
   }
 }

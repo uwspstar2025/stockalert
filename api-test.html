@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API连接测试</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1e1e1e; color: #cccccc; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .success { background: rgba(78, 201, 176, 0.2); border: 1px solid #4ec9b0; }
+        .error { background: rgba(244, 71, 71, 0.2); border: 1px solid #f44747; }
+        button { padding: 10px 20px; margin: 5px; background: #007acc; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #005a9e; }
+        pre { background: #252526; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>股票追踪系统 - API连接测试</h1>
+    
+    <div>
+        <button onclick="testHealth()">测试健康检查</button>
+        <button onclick="testStocks()">测试股票数据</button>
+        <button onclick="testCORS()">测试CORS</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+        const resultsDiv = document.getElementById('results');
+
+        function addResult(title, success, data) {
+            const div = document.createElement('div');
+            div.className = 'test-result ' + (success ? 'success' : 'error');
+            div.innerHTML = `
+                <h3>${title}</h3>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+            resultsDiv.appendChild(div);
+        }
+
+        async function testHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                addResult('健康检查', response.ok, data);
+            } catch (error) {
+                addResult('健康检查', false, { error: error.message });
+            }
+        }
+
+        async function testStocks() {
+            try {
+                const response = await fetch(`${API_BASE}/api/stocks`);
+                const data = await response.json();
+                addResult('股票数据', response.ok, data);
+            } catch (error) {
+                addResult('股票数据', false, { error: error.message });
+            }
+        }
+
+        async function testCORS() {
+            try {
+                const response = await fetch(`${API_BASE}/api/stocks`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Origin': 'http://localhost:4200'
+                    }
+                });
+                const data = await response.json();
+                addResult('CORS测试', response.ok, data);
+            } catch (error) {
+                addResult('CORS测试', false, { error: error.message });
+            }
+        }
+
+        // 自动运行所有测试
+        setTimeout(() => {
+            testHealth();
+            setTimeout(() => testStocks(), 500);
+            setTimeout(() => testCORS(), 1000);
+        }, 1000);
+    </script>
+</body>
+</html>
