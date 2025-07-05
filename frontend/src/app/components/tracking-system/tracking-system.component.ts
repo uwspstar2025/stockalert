@@ -1,0 +1,68 @@
+import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+
+@Component({
+  selector: 'app-tracking-system',
+  template: `
+    <div class="container">
+      <div class="header">
+        <h1>股票追踪系统</h1>
+        <p>监控1只股票-经典4%-20%策略</p>
+      </div>
+
+      <div class="alert-banner">
+        <mat-icon>error</mat-icon>
+        <span>获取股票数据失败，请检查网络连接</span>
+        <button class="close-btn" (click)="dismissAlert()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="strategy-card">
+        <h2>交易策略-经典4%-20%策略</h2>
+        
+        <div class="strategy-metrics">
+          <div class="metric">
+            <label>买入触发条件:</label>
+            <div class="value">下跌 4%</div>
+          </div>
+          
+          <div class="metric">
+            <label>卖出触发条件:</label>
+            <div class="value">上涨 20%</div>
+          </div>
+        </div>
+
+        <div class="status-section">
+          <div class="status-icon">
+            <mat-icon>bar_chart</mat-icon>
+          </div>
+          <div class="status-text">
+            <h3>暂无数据配置</h3>
+            <p>请在右侧添加股票并开启数据流服务</p>
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <button class="btn btn-danger" (click)="restartService()">
+            <mat-icon>refresh</mat-icon>
+            服务器重新开启
+          </button>
+        </div>
+      </div>
+    </div>
+  `,
+  styleUrls: ['./tracking-system.component.scss']
+})
+export class TrackingSystemComponent {
+  constructor(private router: Router) {}
+
+  dismissAlert() {
+    // Logic to dismiss alert
+  }
+
+  restartService() {
+    // Logic to restart service
+    console.log('Restarting service...');
+  }
+}

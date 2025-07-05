@@ -1,0 +1,171 @@
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 30px;
+  color: white;
+  
+  h1 {
+    font-size: 42px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  p {
+    font-size: 18px;
+    opacity: 0.9;
+  }
+}
+
+.alert-banner {
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #dc2626;
+  
+  mat-icon {
+    font-size: 20px;
+  }
+  
+  span {
+    flex: 1;
+    font-weight: 500;
+  }
+  
+  .close-btn {
+    background: none;
+    border: none;
+    color: #dc2626;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    
+    &:hover {
+      background: rgba(220, 38, 38, 0.1);
+    }
+    
+    mat-icon {
+      font-size: 18px;
+    }
+  }
+}
+
+.strategy-card {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  
+  h2 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 30px;
+    color: #1f2937;
+  }
+}
+
+.strategy-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-bottom: 50px;
+  
+  .metric {
+    padding: 20px;
+    background: #f9fafb;
+    border-radius: 12px;
+    
+    label {
+      display: block;
+      font-size: 14px;
+      color: #6b7280;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    
+    .value {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+  }
+}
+
+.status-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 40px;
+  
+  .status-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    
+    mat-icon {
+      font-size: 40px;
+      color: white;
+    }
+  }
+  
+  .status-text {
+    h3 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 8px;
+    }
+    
+    p {
+      color: #6b7280;
+      font-size: 16px;
+    }
+  }
+}
+
+.action-buttons {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 32px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 12px;
+    
+    mat-icon {
+      font-size: 20px;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .strategy-metrics {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .header h1 {
+    font-size: 32px;
+  }
+  
+  .strategy-card {
+    padding: 30px 20px;
+  }
+}
