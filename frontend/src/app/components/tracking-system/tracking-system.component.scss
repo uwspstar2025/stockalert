@@ -1,37 +1,39 @@
+// Tracking System Component Styles - VSCode Dark Theme
 .container {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 40px 20px;
+  background: var(--bg-primary);
+  min-height: 100vh;
 }
 
 .header {
   text-align: center;
-  margin-bottom: 30px;
-  color: white;
+  margin-bottom: 40px;
   
   h1 {
     font-size: 42px;
     font-weight: 700;
     margin-bottom: 16px;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    color: var(--text-primary);
   }
   
   p {
     font-size: 18px;
-    opacity: 0.9;
+    color: var(--text-secondary);
   }
 }
 
 .alert-banner {
-  background: #fee2e2;
-  border: 1px solid #fecaca;
-  border-radius: 12px;
+  background: rgba(244, 71, 71, 0.1);
+  border: 1px solid var(--error-color);
+  border-radius: 8px;
   padding: 16px 20px;
   margin-bottom: 30px;
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #dc2626;
+  color: var(--error-color);
   
   mat-icon {
     font-size: 20px;
@@ -45,13 +47,14 @@
   .close-btn {
     background: none;
     border: none;
-    color: #dc2626;
+    color: var(--error-color);
     cursor: pointer;
     padding: 4px;
     border-radius: 4px;
+    transition: background 0.3s ease;
     
     &:hover {
-      background: rgba(220, 38, 38, 0.1);
+      background: rgba(244, 71, 71, 0.2);
     }
     
     mat-icon {
@@ -60,54 +63,103 @@
   }
   
   &.success {
-    background: rgba(78, 201, 176, 0.2);
+    background: rgba(78, 201, 176, 0.1);
     border-color: var(--success-color);
     color: var(--success-color);
     
     mat-icon {
       color: var(--success-color);
     }
+    
+    .close-btn {
+      color: var(--success-color);
+      
+      &:hover {
+        background: rgba(78, 201, 176, 0.2);
+      }
+    }
+  }
+  
+  &.warning {
+    background: rgba(255, 140, 0, 0.1);
+    border-color: var(--accent-orange);
+    color: var(--accent-orange);
+    
+    mat-icon {
+      color: var(--accent-orange);
+    }
+    
+    .close-btn {
+      color: var(--accent-orange);
+      
+      &:hover {
+        background: rgba(255, 140, 0, 0.2);
+      }
+    }
   }
 }
 
 .strategy-card {
-  background: white;
-  border-radius: 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   padding: 40px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px var(--shadow-light);
   text-align: center;
+  margin-bottom: 30px;
   
   h2 {
     font-size: 24px;
     font-weight: 700;
     margin-bottom: 30px;
-    color: #1f2937;
+    color: var(--text-primary);
   }
 }
 
 .strategy-metrics {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 30px;
-  margin-bottom: 50px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 40px;
   
   .metric {
     padding: 20px;
-    background: #f9fafb;
-    border-radius: 12px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      background: var(--hover-bg);
+      border-color: var(--accent-blue);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px var(--shadow-medium);
+    }
     
     label {
       display: block;
-      font-size: 14px;
-      color: #6b7280;
+      font-size: 13px;
+      color: var(--text-secondary);
       margin-bottom: 8px;
       font-weight: 500;
     }
     
     .value {
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 700;
-      color: #1f2937;
+      color: var(--text-primary);
+      
+      &.success {
+        color: var(--success-color);
+      }
+      
+      &.warning {
+        color: var(--accent-orange);
+      }
+      
+      &.error {
+        color: var(--error-color);
+      }
     }
   }
 }
@@ -117,16 +169,36 @@
   flex-direction: column;
   align-items: center;
   margin-bottom: 40px;
+  padding: 30px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   
   .status-icon {
     width: 80px;
     height: 80px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, var(--accent-blue), var(--info-color));
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0, 122, 204, 0.3);
+    
+    &.success {
+      background: linear-gradient(135deg, var(--success-color), #3ba08c);
+      box-shadow: 0 4px 12px rgba(78, 201, 176, 0.3);
+    }
+    
+    &.warning {
+      background: linear-gradient(135deg, var(--accent-orange), #e6a400);
+      box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
+    }
+    
+    &.error {
+      background: linear-gradient(135deg, var(--error-color), #d73535);
+      box-shadow: 0 4px 12px rgba(244, 71, 71, 0.3);
+    }
     
     mat-icon {
       font-size: 40px;
@@ -135,17 +207,170 @@
   }
   
   .status-text {
+    text-align: center;
+    
     h3 {
       font-size: 20px;
       font-weight: 600;
-      color: #1f2937;
+      color: var(--text-primary);
       margin-bottom: 8px;
     }
     
     p {
-      color: #6b7280;
+      color: var(--text-secondary);
       font-size: 16px;
+      line-height: 1.5;
     }
+  }
+}
+
+.action-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 30px;
+  
+  .btn {
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    min-width: 140px;
+    
+    &.btn-success {
+      background: var(--success-color);
+      color: white;
+      border: 1px solid var(--success-color);
+      
+      &:hover {
+        background: #3ba08c;
+        border-color: #3ba08c;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(78, 201, 176, 0.3);
+      }
+    }
+    
+    &.btn-warning {
+      background: var(--accent-orange);
+      color: white;
+      border: 1px solid var(--accent-orange);
+      
+      &:hover {
+        background: #e6a400;
+        border-color: #e6a400;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
+      }
+    }
+    
+    &.btn-danger {
+      background: var(--error-color);
+      color: white;
+      border: 1px solid var(--error-color);
+      
+      &:hover {
+        background: #d73535;
+        border-color: #d73535;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(244, 71, 71, 0.3);
+      }
+    }
+  }
+}
+
+.tracking-dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 30px;
+}
+
+.tracking-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--accent-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px var(--shadow-medium);
+  }
+  
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    
+    h4 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .status-badge {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      
+      &.active {
+        background: rgba(78, 201, 176, 0.2);
+        color: var(--success-color);
+        border: 1px solid var(--success-color);
+      }
+      
+      &.paused {
+        background: rgba(255, 140, 0, 0.2);
+        color: var(--accent-orange);
+        border: 1px solid var(--accent-orange);
+      }
+      
+      &.stopped {
+        background: rgba(244, 71, 71, 0.2);
+        color: var(--error-color);
+        border: 1px solid var(--error-color);
+      }
+    }
+  }
+  
+  .card-content {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .container {
+    padding: 20px 10px;
+  }
+  
+  .header h1 {
+    font-size: 32px;
+  }
+  
+  .strategy-metrics {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    align-items: center;
+    
+    .btn {
+      width: 100%;
+      max-width: 280px;
+    }
+  }
+  
+  .tracking-dashboard {
+    grid-template-columns: 1fr;
   }
 }
 
