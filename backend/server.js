@@ -12,7 +12,7 @@ const strategiesRoutes = require("./routes/strategies");
 const { initializeWebSocket } = require("./services/websocket");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 // Security middleware
 app.use(helmet());
