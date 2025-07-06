@@ -32,20 +32,20 @@ export class SidebarComponent implements OnInit {
   
   sidebarItems: SidebarItem[] = [
     {
-      icon: 'settings',
-      label: '配置',
-      route: '/strategy-selection',
-      isActive: false
-    },
-    {
       icon: 'dashboard',
-      label: '面板',
+      label: '选择股票',
       route: '/stock-selection',
       isActive: false
     },
     {
+      icon: 'settings',
+      label: '策略配置',
+      route: '/strategy-selection',
+      isActive: false
+    },
+    {
       icon: 'trending_up',
-      label: '历史',
+      label: '监控系统',
       route: '/tracking',
       isActive: false
     },

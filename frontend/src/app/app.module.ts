@@ -31,7 +31,7 @@ import { HelpComponent } from './components/help/help.component';
 import { ChatbotComponent } from './components/chatbot/chatbot.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: '/strategy-selection', pathMatch: 'full' },
+  { path: '', redirectTo: '/stock-selection', pathMatch: 'full' },
   { path: 'strategy-selection', component: StrategySelectionComponent },
   { path: 'stock-selection', component: StockSelectionComponent },
   { path: 'portfolio', component: PortfolioComponent },
