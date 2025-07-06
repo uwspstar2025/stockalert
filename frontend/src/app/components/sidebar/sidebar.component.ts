@@ -17,7 +17,8 @@ interface SidebarItem {
         <div class="sidebar-item" 
              *ngFor="let item of sidebarItems" 
              [class.active]="item.isActive"
-             (click)="navigateTo(item)">
+             (click)="navigateTo(item)"
+             [title]="item.label + ' - ' + item.route">
           <div class="item-icon">
             <mat-icon>{{ item.icon }}</mat-icon>
           </div>
@@ -92,8 +93,20 @@ export class SidebarComponent implements OnInit {
   }
 
   navigateTo(item: SidebarItem) {
+    console.log('Sidebar navigation clicked:', item);
+    console.log('Attempting to navigate to:', item.route);
+    
     if (item.route) {
-      this.router.navigate([item.route]);
+      this.router.navigate([item.route]).then(
+        (success) => {
+          console.log('Navigation success:', success);
+        },
+        (error) => {
+          console.error('Navigation error:', error);
+        }
+      );
+    } else {
+      console.error('No route defined for item:', item.label);
     }
   }
 }

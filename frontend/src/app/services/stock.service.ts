@@ -24,7 +24,9 @@ export class StockService {
   constructor(private http: HttpClient) {}
 
   getAllStocks(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/stocks`);
+    const url = `${this.apiUrl}/stocks`;
+    console.log('StockService: Making request to:', url);
+    return this.http.get(url);
   }
 
   getStock(symbol: string): Observable<any> {

@@ -81,7 +81,7 @@ export class NavigationComponent {
         this.router.navigate(['/strategy-selection']);
         break;
       case 3:
-        this.router.navigate(['/tracking-system']);
+        this.router.navigate(['/tracking']);
         break;
       case 4:
         this.router.navigate(['/portfolio']);
@@ -99,7 +99,7 @@ export class NavigationComponent {
     const url = this.router.url;
     if (url.includes('stock-selection')) this.currentStep = 1;
     else if (url.includes('strategy-selection')) this.currentStep = 2;
-    else if (url.includes('tracking-system')) this.currentStep = 3;
+    else if (url.includes('tracking')) this.currentStep = 3;
     else if (url.includes('portfolio')) this.currentStep = 4;
     else if (url.includes('analysis')) this.currentStep = 5;
     else if (url.includes('alerts')) this.currentStep = 6;
