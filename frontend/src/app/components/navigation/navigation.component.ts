@@ -1,5 +1,7 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router, NavigationEnd } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-navigation',
@@ -64,11 +66,30 @@ import { Router } from '@angular/router';
   `,
   styleUrls: ['./navigation.component.scss']
 })
-export class NavigationComponent {
+export class NavigationComponent implements OnInit, OnDestroy {
   currentStep = 1;
+  private routerSubscription: Subscription = new Subscription();
 
-  constructor(private router: Router) {
+  constructor(private router: Router) {}
+
+  ngOnInit() {
+    // Set initial step
     this.updateCurrentStep();
+    
+    // Listen to route changes
+    this.routerSubscription = this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        this.updateCurrentStep();
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
   }
 
   navigateToStep(step: number) {
@@ -97,11 +118,28 @@ export class NavigationComponent {
 
   private updateCurrentStep() {
     const url = this.router.url;
-    if (url.includes('stock-selection')) this.currentStep = 1;
-    else if (url.includes('strategy-selection')) this.currentStep = 2;
-    else if (url.includes('tracking')) this.currentStep = 3;
-    else if (url.includes('portfolio')) this.currentStep = 4;
-    else if (url.includes('analysis')) this.currentStep = 5;
-    else if (url.includes('alerts')) this.currentStep = 6;
+    console.log('Navigation: Current URL:', url); // Debug log
+    
+    if (url.includes('stock-selection')) {
+      this.currentStep = 1;
+    } else if (url.includes('add-stock')) {
+      this.currentStep = 1; // Add stock is part of stock selection flow
+    } else if (url.includes('strategy-selection')) {
+      this.currentStep = 2;
+    } else if (url.includes('tracking')) {
+      this.currentStep = 3;
+    } else if (url.includes('portfolio')) {
+      this.currentStep = 4;
+    } else if (url.includes('analysis')) {
+      this.currentStep = 5;
+    } else if (url.includes('alerts')) {
+      this.currentStep = 6;
+    } else if (url.includes('help')) {
+      this.currentStep = 1; // Help is informational, keep step 1
+    } else {
+      this.currentStep = 1; // Default to step 1
+    }
+    
+    console.log('Navigation: Updated currentStep to:', this.currentStep); // Debug log
   }
 }
