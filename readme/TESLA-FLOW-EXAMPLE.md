@@ -1,8 +1,20 @@
 # 📊 Stock Alert App: 6-Step Investment Flow
 
-## 🎯 **Tesla Example: $2,565 → $3,206 (+25% Profit)**
+## 🎯 **Tesla Example: Real Yahoo Finance Data**
 
-```
+**Current Tesla Price: $315.35** (Live from Yahoo Finance API)
+
+### **Real-Time Tesla Data:**
+
+- **Symbol**: TSLA
+- **Company**: Tesla, Inc.
+- **Current Price**: $315.35
+- **Change**: -0.1%
+- **Volume**: 58,042,302
+- **Market Cap**: $1.016 Trillion
+- **Day Range**: $312.76 - $318.45
+
+```txt
 Step 1: 选择股票 (Select Stock)
 ┌─────────────────────────┐
 │  🔍 Choose Tesla (TSLA) │
@@ -59,13 +71,15 @@ Step 6: 价格提醒 (Price Alerts)
 
 ## 💡 **Tesla Success Story Timeline**
 
-### **Day 0: Setup** 
+### **Day 0: Setup**
+
 - ✅ Add TSLA to monitoring
 - ✅ Choose momentum strategy
 - ✅ Set alerts for $255.91 breakout
 
-### **Day 15: Buy Signal** 
-```
+### **Day 15: Buy Signal**
+
+```txt
 🚨 ALERT: TSLA broke above $255.91!
 📈 Current Price: $256.50
 💰 Recommended Buy: 10 shares = $2,565

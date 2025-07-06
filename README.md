@@ -46,6 +46,8 @@ stockalert/
 │   ├── services/            # Business logic
 │   ├── server.js            # Main server file
 │   └── package.json
+├── readme/                  # Documentation
+│   └── STOCK-SEARCH-API.md  # Stock search API documentation
 └── README.md
 ```
 
@@ -84,6 +86,12 @@ stockalert/
    - Frontend: http://localhost:4200
    - Backend API: http://localhost:3000
    - WebSocket: ws://localhost:3000
+
+## Documentation
+
+For detailed technical documentation, see the `/readme` folder:
+
+- **[Stock Search API Documentation](readme/STOCK-SEARCH-API.md)** - Details about the current mock API implementation and recommendations for real stock API integration
 
 ## API Endpoints
 

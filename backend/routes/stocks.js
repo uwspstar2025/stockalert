@@ -1,77 +1,116 @@
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
+const yahooFinance = require("yahoo-finance2").default;
 
-// Mock stock data - replace with real API integration
-const mockStocks = [
-  {
-    symbol: "TSLA",
-    name: "Tesla Inc.",
-    price: 177.97,
-    change: 2.4,
-    volume: 45234567,
-  },
-  {
-    symbol: "AVGO",
-    name: "Broadcom Inc.",
-    price: 1234.56,
-    change: -1.2,
-    volume: 12345678,
-  },
-  {
-    symbol: "AAPL",
-    name: "Apple Inc.",
-    price: 189.25,
-    change: 0.8,
-    volume: 67890123,
-  },
-  {
-    symbol: "GOOGL",
-    name: "Alphabet Inc.",
-    price: 2456.78,
-    change: 1.5,
-    volume: 23456789,
-  },
-  {
-    symbol: "MSFT",
-    name: "Microsoft Corp.",
-    price: 345.67,
-    change: -0.5,
-    volume: 34567890,
-  },
-  {
-    symbol: "NVDA",
-    name: "NVIDIA Corp.",
-    price: 456.89,
-    change: 3.2,
-    volume: 45678901,
-  },
-  {
-    symbol: "AMZN",
-    name: "Amazon.com Inc.",
-    price: 123.45,
-    change: -2.1,
-    volume: 56789012,
-  },
-  {
-    symbol: "META",
-    name: "Meta Platforms Inc.",
-    price: 234.56,
-    change: -1.8,
-    volume: 67890123,
-  },
+// Default stock symbols to fetch
+const defaultSymbols = [
+  "TSLA",
+  "AAPL",
+  "GOOGL",
+  "MSFT",
+  "NVDA",
+  "AMZN",
+  "META",
+  "AVGO",
 ];
+
+// Cache for storing stock data with timestamps
+let stockCache = {
+  data: [],
+  lastUpdate: null,
+  cacheDuration: 5 * 60 * 1000, // 5 minutes cache
+};
+
+// Function to fetch stock data from Yahoo Finance
+async function fetchStockData(symbols) {
+  try {
+    console.log(`Fetching stock data for: ${symbols.join(", ")}`);
+
+    const quotes = await yahooFinance.quote(symbols);
+    const stockData = [];
+
+    for (const symbol of symbols) {
+      const quote = Array.isArray(quotes)
+        ? quotes.find((q) => q.symbol === symbol)
+        : quotes;
+
+      if (quote && quote.regularMarketPrice) {
+        const currentPrice = quote.regularMarketPrice;
+        const previousClose = quote.regularMarketPreviousClose || currentPrice;
+        const change = ((currentPrice - previousClose) / previousClose) * 100;
+
+        stockData.push({
+          symbol: quote.symbol,
+          name: quote.longName || quote.shortName || symbol,
+          price: currentPrice,
+          change: parseFloat(change.toFixed(2)),
+          volume: quote.regularMarketVolume || 0,
+          lastUpdated: new Date().toISOString(),
+          marketCap: quote.marketCap,
+          dayLow: quote.regularMarketDayLow,
+          dayHigh: quote.regularMarketDayHigh,
+        });
+      }
+    }
+
+    console.log(`Successfully fetched ${stockData.length} stocks`);
+    return stockData;
+  } catch (error) {
+    console.error("Error fetching stock data:", error.message);
+    throw error;
+  }
+}
+
+// Function to get cached data or fetch new data
+async function getStockData() {
+  const now = Date.now();
+
+  // Check if cache is valid
+  if (
+    stockCache.lastUpdate &&
+    now - stockCache.lastUpdate < stockCache.cacheDuration
+  ) {
+    console.log("Returning cached stock data");
+    return stockCache.data;
+  }
+
+  try {
+    // Fetch fresh data
+    const freshData = await fetchStockData(defaultSymbols);
+
+    // Update cache
+    stockCache.data = freshData;
+    stockCache.lastUpdate = now;
+
+    return freshData;
+  } catch (error) {
+    // If fresh fetch fails and we have cached data, return it
+    if (stockCache.data.length > 0) {
+      console.log("Returning stale cached data due to fetch error");
+      return stockCache.data;
+    }
+    throw error;
+  }
+}
 
 // Get all stocks
 router.get("/", async (req, res) => {
   try {
-    // In production, this would fetch from a real stock API
+    console.log("GET /api/stocks - Fetching stock data...");
+    const stockData = await getStockData();
+
     res.json({
       success: true,
-      data: mockStocks,
+      data: stockData,
       timestamp: new Date().toISOString(),
+      source: "Yahoo Finance API",
+      cached:
+        stockCache.lastUpdate &&
+        Date.now() - stockCache.lastUpdate < stockCache.cacheDuration,
     });
   } catch (error) {
+    console.error("Error in GET /api/stocks:", error);
     res.status(500).json({
       success: false,
       error: "Failed to fetch stock data",
@@ -84,9 +123,43 @@ router.get("/", async (req, res) => {
 router.get("/:symbol", async (req, res) => {
   try {
     const { symbol } = req.params;
-    const stock = mockStocks.find(
+    console.log(`GET /api/stocks/${symbol} - Fetching specific stock data...`);
+
+    // Try to get from cache first
+    const cachedStocks = stockCache.data;
+    let stock = cachedStocks.find(
       (s) => s.symbol.toLowerCase() === symbol.toLowerCase()
     );
+
+    // If not in cache or cache is stale, fetch fresh data for this symbol
+    if (
+      !stock ||
+      !stockCache.lastUpdate ||
+      Date.now() - stockCache.lastUpdate > stockCache.cacheDuration
+    ) {
+      try {
+        const freshData = await fetchStockData([symbol.toUpperCase()]);
+        if (freshData.length > 0) {
+          stock = freshData[0];
+
+          // Update cache for this symbol
+          const existingIndex = stockCache.data.findIndex(
+            (s) => s.symbol.toLowerCase() === symbol.toLowerCase()
+          );
+          if (existingIndex >= 0) {
+            stockCache.data[existingIndex] = stock;
+          } else {
+            stockCache.data.push(stock);
+          }
+        }
+      } catch (fetchError) {
+        console.error(
+          `Error fetching fresh data for ${symbol}:`,
+          fetchError.message
+        );
+        // Continue with cached data if available
+      }
+    }
 
     if (!stock) {
       return res.status(404).json({
@@ -96,20 +169,14 @@ router.get("/:symbol", async (req, res) => {
       });
     }
 
-    // Simulate real-time price fluctuation
-    const fluctuation = (Math.random() - 0.5) * 0.1; // ±5% fluctuation
-    const updatedStock = {
-      ...stock,
-      price: +(stock.price * (1 + fluctuation)).toFixed(2),
-      change: +(stock.change + fluctuation * 100).toFixed(2),
-      lastUpdated: new Date().toISOString(),
-    };
-
     res.json({
       success: true,
-      data: updatedStock,
+      data: stock,
+      timestamp: new Date().toISOString(),
+      source: "Yahoo Finance API",
     });
   } catch (error) {
+    console.error(`Error in GET /api/stocks/${req.params.symbol}:`, error);
     res.status(500).json({
       success: false,
       error: "Failed to fetch stock data",
@@ -124,33 +191,108 @@ router.get("/:symbol/history", async (req, res) => {
     const { symbol } = req.params;
     const { period = "1d" } = req.query;
 
-    // Generate mock historical data
-    const basePrice =
-      mockStocks.find((s) => s.symbol.toLowerCase() === symbol.toLowerCase())
-        ?.price || 100;
-    const dataPoints = period === "1d" ? 24 : period === "1w" ? 7 : 30;
+    console.log(
+      `GET /api/stocks/${symbol}/history - Fetching historical data...`
+    );
 
-    const history = Array.from({ length: dataPoints }, (_, i) => {
-      const time = new Date();
-      time.setHours(time.getHours() - (dataPoints - i));
+    // Map period to Yahoo Finance intervals
+    let interval = "1h";
+    let range = "1d";
 
-      const fluctuation = (Math.random() - 0.5) * 0.05;
-      return {
-        timestamp: time.toISOString(),
-        price: +(basePrice * (1 + fluctuation)).toFixed(2),
-        volume: Math.floor(Math.random() * 1000000) + 500000,
-      };
-    });
+    switch (period) {
+      case "1d":
+        interval = "5m";
+        range = "1d";
+        break;
+      case "1w":
+        interval = "1h";
+        range = "5d";
+        break;
+      case "1m":
+        interval = "1d";
+        range = "1mo";
+        break;
+      default:
+        interval = "1h";
+        range = "1d";
+    }
 
-    res.json({
-      success: true,
-      data: {
-        symbol,
-        period,
-        history,
-      },
-    });
+    try {
+      const result = await yahooFinance.chart(symbol.toUpperCase(), {
+        period1: new Date(
+          Date.now() -
+            (range === "1d"
+              ? 86400000
+              : range === "5d"
+              ? 432000000
+              : 2592000000)
+        ),
+        period2: new Date(),
+        interval: interval,
+      });
+
+      const history = result.quotes.map((quote) => ({
+        timestamp: new Date(quote.date).toISOString(),
+        price: quote.close || quote.open,
+        volume: quote.volume || 0,
+        high: quote.high,
+        low: quote.low,
+        open: quote.open,
+        close: quote.close,
+      }));
+
+      res.json({
+        success: true,
+        data: {
+          symbol: symbol.toUpperCase(),
+          period,
+          history,
+        },
+        source: "Yahoo Finance API",
+      });
+    } catch (yahoError) {
+      console.error(
+        `Yahoo Finance API error for ${symbol}:`,
+        yahoError.message
+      );
+
+      // Fallback to mock data if Yahoo Finance fails
+      const basePrice = 100;
+      const dataPoints = period === "1d" ? 24 : period === "1w" ? 7 : 30;
+
+      const history = Array.from({ length: dataPoints }, (_, i) => {
+        const time = new Date();
+        time.setHours(time.getHours() - (dataPoints - i));
+
+        const fluctuation = (Math.random() - 0.5) * 0.05;
+        const price = +(basePrice * (1 + fluctuation)).toFixed(2);
+
+        return {
+          timestamp: time.toISOString(),
+          price: price,
+          volume: Math.floor(Math.random() * 1000000) + 500000,
+          high: price * 1.02,
+          low: price * 0.98,
+          open: price * (0.99 + Math.random() * 0.02),
+          close: price,
+        };
+      });
+
+      res.json({
+        success: true,
+        data: {
+          symbol: symbol.toUpperCase(),
+          period,
+          history,
+        },
+        source: "Fallback Mock Data",
+      });
+    }
   } catch (error) {
+    console.error(
+      `Error in GET /api/stocks/${req.params.symbol}/history:`,
+      error
+    );
     res.status(500).json({
       success: false,
       error: "Failed to fetch stock history",
@@ -182,6 +324,42 @@ router.post("/watchlist", async (req, res) => {
     res.status(500).json({
       success: false,
       error: "Failed to add stocks to watchlist",
+      message: error.message,
+    });
+  }
+});
+
+// Add search endpoint for stock symbols
+router.get("/search/:query", async (req, res) => {
+  try {
+    const { query } = req.params;
+    console.log(`GET /api/stocks/search/${query} - Searching for stocks...`);
+
+    // For now, search within our default symbols and cached data
+    const allStocks =
+      stockCache.data.length > 0 ? stockCache.data : await getStockData();
+
+    const searchResults = allStocks.filter(
+      (stock) =>
+        stock.symbol.toLowerCase().includes(query.toLowerCase()) ||
+        stock.name.toLowerCase().includes(query.toLowerCase())
+    );
+
+    res.json({
+      success: true,
+      data: searchResults,
+      query: query,
+      timestamp: new Date().toISOString(),
+      source: "Yahoo Finance API",
+    });
+  } catch (error) {
+    console.error(
+      `Error in GET /api/stocks/search/${req.params.query}:`,
+      error
+    );
+    res.status(500).json({
+      success: false,
+      error: "Failed to search stocks",
       message: error.message,
     });
   }
