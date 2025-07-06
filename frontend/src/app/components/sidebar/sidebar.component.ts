@@ -39,6 +39,12 @@ export class SidebarComponent implements OnInit {
       isActive: false
     },
     {
+      icon: 'add_circle',
+      label: '添加股票',
+      route: '/add-stock',
+      isActive: false
+    },
+    {
       icon: 'settings',
       label: '策略配置',
       route: '/strategy-selection',

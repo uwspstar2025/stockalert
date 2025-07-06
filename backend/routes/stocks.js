@@ -5,14 +5,44 @@ const yahooFinance = require("yahoo-finance2").default;
 
 // Default stock symbols to fetch
 const defaultSymbols = [
-  "TSLA",
-  "AAPL",
-  "GOOGL",
-  "MSFT",
-  "NVDA",
-  "AMZN",
-  "META",
-  "AVGO",
+  "TSLA", // Tesla, Inc.
+  "AAPL", // Apple Inc.
+  "GOOGL", // Alphabet Inc.
+  "MSFT", // Microsoft Corporation
+  "NVDA", // NVIDIA Corporation
+  "AMZN", // Amazon.com Inc.
+  "META", // Meta Platforms Inc.
+  "AVGO", // Broadcom Inc.
+
+  // Tech Giants
+  "ORCL", // Oracle Corporation
+  "CRM", // Salesforce Inc.
+  "ADBE", // Adobe Inc.
+
+  // Finance
+  "JPM", // JPMorgan Chase & Co.
+  "BAC", // Bank of America Corp
+  "V", // Visa Inc.
+  "MA", // Mastercard Inc.
+
+  // Healthcare
+  "JNJ", // Johnson & Johnson
+  "UNH", // UnitedHealth Group Inc.
+  "PFE", // Pfizer Inc.
+
+  // Consumer
+  "KO", // The Coca-Cola Company
+  "PG", // Procter & Gamble Co.
+  "WMT", // Walmart Inc.
+  "HD", // The Home Depot Inc.
+
+  // Energy
+  "XOM", // Exxon Mobil Corporation
+  "CVX", // Chevron Corporation
+
+  // Entertainment
+  "DIS", // The Walt Disney Company
+  "NFLX", // Netflix Inc.
 ];
 
 // Cache for storing stock data with timestamps
@@ -114,6 +144,30 @@ router.get("/", async (req, res) => {
     res.status(500).json({
       success: false,
       error: "Failed to fetch stock data",
+      message: error.message,
+    });
+  }
+});
+
+// Get list of currently tracked symbols (must be before /:symbol route)
+router.get("/tracked", async (req, res) => {
+  try {
+    res.json({
+      success: true,
+      data: {
+        symbols: defaultSymbols,
+        count: defaultSymbols.length,
+        lastUpdated: stockCache.lastUpdate
+          ? new Date(stockCache.lastUpdate).toISOString()
+          : null,
+      },
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("Error in GET /api/stocks/tracked:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to get tracked stocks",
       message: error.message,
     });
   }
@@ -301,7 +355,135 @@ router.get("/:symbol/history", async (req, res) => {
   }
 });
 
-// Add stock to watchlist
+// Add new stock to tracking list
+router.post("/add", async (req, res) => {
+  try {
+    const { symbol } = req.body;
+
+    if (!symbol || typeof symbol !== "string") {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid request",
+        message: "Symbol is required and must be a string",
+      });
+    }
+
+    const upperSymbol = symbol.toUpperCase().trim();
+
+    // Check if stock already exists in default symbols
+    if (defaultSymbols.includes(upperSymbol)) {
+      return res.status(409).json({
+        success: false,
+        error: "Stock already exists",
+        message: `${upperSymbol} is already being tracked`,
+      });
+    }
+
+    try {
+      // Validate the symbol by fetching data from Yahoo Finance
+      console.log(`Validating new stock symbol: ${upperSymbol}`);
+      const stockData = await fetchStockData([upperSymbol]);
+
+      if (stockData.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: "Stock not found",
+          message: `Symbol ${upperSymbol} not found in Yahoo Finance`,
+        });
+      }
+
+      // Add to default symbols array
+      defaultSymbols.push(upperSymbol);
+
+      // Add to cache
+      stockCache.data.push(stockData[0]);
+
+      console.log(`Successfully added ${upperSymbol} to tracking list`);
+
+      res.json({
+        success: true,
+        message: `${upperSymbol} added to tracking list`,
+        data: {
+          symbol: upperSymbol,
+          stockInfo: stockData[0],
+          addedAt: new Date().toISOString(),
+          totalStocks: defaultSymbols.length,
+        },
+      });
+    } catch (fetchError) {
+      console.error(
+        `Error validating symbol ${upperSymbol}:`,
+        fetchError.message
+      );
+      return res.status(400).json({
+        success: false,
+        error: "Invalid stock symbol",
+        message: `Unable to fetch data for ${upperSymbol}. Please check the symbol.`,
+      });
+    }
+  } catch (error) {
+    console.error("Error in POST /api/stocks/add:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to add stock",
+      message: error.message,
+    });
+  }
+});
+
+// Remove stock from tracking list
+router.delete("/remove/:symbol", async (req, res) => {
+  try {
+    const { symbol } = req.params;
+    const upperSymbol = symbol.toUpperCase().trim();
+
+    // Find index in default symbols
+    const symbolIndex = defaultSymbols.indexOf(upperSymbol);
+
+    if (symbolIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: "Stock not found",
+        message: `${upperSymbol} is not being tracked`,
+      });
+    }
+
+    // Remove from default symbols
+    defaultSymbols.splice(symbolIndex, 1);
+
+    // Remove from cache
+    const cacheIndex = stockCache.data.findIndex(
+      (s) => s.symbol === upperSymbol
+    );
+    if (cacheIndex >= 0) {
+      stockCache.data.splice(cacheIndex, 1);
+    }
+
+    console.log(`Successfully removed ${upperSymbol} from tracking list`);
+
+    res.json({
+      success: true,
+      message: `${upperSymbol} removed from tracking list`,
+      data: {
+        symbol: upperSymbol,
+        removedAt: new Date().toISOString(),
+        totalStocks: defaultSymbols.length,
+      },
+    });
+  } catch (error) {
+    console.error(
+      `Error in DELETE /api/stocks/remove/${req.params.symbol}:`,
+      error
+    );
+    res.status(500).json({
+      success: false,
+      error: "Failed to remove stock",
+      message: error.message,
+    });
+  }
+});
+
+// Add stock to watchlist (legacy endpoint)
 router.post("/watchlist", async (req, res) => {
   try {
     const { symbols } = req.body;

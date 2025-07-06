@@ -49,6 +49,22 @@ export class StockService {
     return this.selectedStocksSubject.value;
   }
 
+  addNewStock(symbol: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/stocks/add`, { symbol });
+  }
+
+  removeStock(symbol: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/stocks/remove/${symbol}`);
+  }
+
+  getTrackedStocks(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/stocks/tracked`);
+  }
+
+  searchStocks(query: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/stocks/search/${query}`);
+  }
+
   // Health check method
   checkApiHealth(): Observable<any> {
     return this.http.get(`${this.apiUrl.replace('/api', '')}/health`);

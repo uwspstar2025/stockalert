@@ -29,6 +29,7 @@ import { StrategySelectionComponent } from './components/strategy-selection/stra
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { HelpComponent } from './components/help/help.component';
 import { ChatbotComponent } from './components/chatbot/chatbot.component';
+import { AddStockComponent } from './components/add-stock/add-stock.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/stock-selection', pathMatch: 'full' },
@@ -38,7 +39,8 @@ const routes: Routes = [
   { path: 'tracking', component: TrackingSystemComponent },
   { path: 'analysis', component: AnalysisComponent },
   { path: 'alerts', component: AlertsComponent },
-  { path: 'help', component: HelpComponent }
+  { path: 'help', component: HelpComponent },
+  { path: 'add-stock', component: AddStockComponent }
 ];
 
 @NgModule({
@@ -53,7 +55,8 @@ const routes: Routes = [
     NavigationComponent,
     SidebarComponent,
     HelpComponent,
-    ChatbotComponent
+    ChatbotComponent,
+    AddStockComponent
   ],
   imports: [
     BrowserModule,

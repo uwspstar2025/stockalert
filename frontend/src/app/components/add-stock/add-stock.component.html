@@ -1,0 +1,113 @@
+<div class="add-stock-container">
+  <!-- Header -->
+  <div class="header">
+    <h2>
+      <i class="fas fa-plus-circle"></i>
+      Add New Stock
+    </h2>
+    <p>Add stocks to your dashboard for real-time tracking</p>
+  </div>
+
+  <!-- Add Stock Form -->
+  <div class="add-form">
+    <div class="input-group">
+      <div class="input-wrapper">
+        <input
+          type="text"
+          [(ngModel)]="stockSymbol"
+          (input)="onInputChange()"
+          (keypress)="onKeyPress($event)"
+          placeholder="Enter stock symbol (e.g., AAPL, TSLA)"
+          class="stock-input"
+          [disabled]="isLoading"
+        />
+        <button
+          (click)="addStock()"
+          [disabled]="isLoading || !stockSymbol.trim()"
+          class="add-button"
+        >
+          <i class="fas fa-plus" *ngIf="!isLoading"></i>
+          <i class="fas fa-spinner fa-spin" *ngIf="isLoading"></i>
+          {{ isLoading ? 'Adding...' : 'Add Stock' }}
+        </button>
+      </div>
+
+      <!-- Search Suggestions -->
+      <div class="suggestions" *ngIf="showSuggestions">
+        <div
+          class="suggestion-item"
+          *ngFor="let stock of suggestions"
+          (click)="selectSuggestion(stock)"
+        >
+          <span class="symbol">{{ stock.symbol }}</span>
+          <span class="name">{{ stock.name }}</span>
+          <span class="price">${{ stock.price | number:'1.2-2' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Message Display -->
+    <div class="message" *ngIf="message" [ngClass]="'message-' + messageType">
+      {{ message }}
+    </div>
+  </div>
+
+  <!-- Popular Stocks -->
+  <div class="popular-stocks">
+    <h3>
+      <i class="fas fa-star"></i>
+      Popular Stocks
+    </h3>
+    <div class="popular-grid">
+      <button
+        *ngFor="let stock of getPopularStocks()"
+        (click)="addPopularStock(stock)"
+        class="popular-stock-btn"
+        [disabled]="isLoading || trackedStocks.includes(stock.symbol)"
+      >
+        <span class="symbol">{{ stock.symbol }}</span>
+        <span class="name">{{ stock.name }}</span>
+        <i class="fas fa-check" *ngIf="trackedStocks.includes(stock.symbol)"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Currently Tracked Stocks -->
+  <div class="tracked-stocks">
+    <h3>
+      <i class="fas fa-list"></i>
+      Currently Tracked ({{ trackedStocks.length }})
+    </h3>
+    <div class="tracked-grid">
+      <div
+        *ngFor="let symbol of trackedStocks"
+        class="tracked-stock"
+      >
+        <span class="symbol">{{ symbol }}</span>
+        <button
+          (click)="removeStock(symbol)"
+          class="remove-btn"
+          [disabled]="isLoading"
+          title="Remove from tracking"
+        >
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Instructions -->
+  <div class="instructions">
+    <h4>
+      <i class="fas fa-info-circle"></i>
+      How to Add Stocks
+    </h4>
+    <ul>
+      <li>Enter a valid stock symbol (e.g., AAPL for Apple, TSLA for Tesla)</li>
+      <li>Search suggestions will appear as you type</li>
+      <li>Click on popular stocks for quick addition</li>
+      <li>Added stocks will appear in all dashboard views</li>
+      <li>Remove stocks by clicking the X button</li>
+    </ul>
+  </div>
+</div>
