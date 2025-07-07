@@ -7,6 +7,14 @@ import { NotificationService } from '../../services/notification.service';
   selector: 'app-strategy-selection',
   template: `
     <div class="container">
+      <!-- Specific Stock Configuration Banner -->
+      <div class="specific-stock-banner" *ngIf="configuringForStock">
+        <div class="banner-content">
+          <i class="fa fa-cog"></i>
+          <span>正在为 <strong>{{ configuringForStock }}</strong> 配置交易策略</span>
+        </div>
+      </div>
+      
       <div class="header">
         <h1>选择交易策略</h1>
         <p>根据您的投资风格选择最适合的交易策略</p>
@@ -292,6 +300,9 @@ export class StrategySelectionComponent implements OnInit {
   loading = true;
   error: string | null = null;
   
+  // Specific stock configuration
+  configuringForStock: string | null = null;
+  
   // 回测数据
   showBacktest = false;
   backtestStrategy: TradingStrategy | null = null;
@@ -312,8 +323,20 @@ export class StrategySelectionComponent implements OnInit {
     this.loadStrategies();
     this.loadCategories();
     
+    // Check if configuring strategy for a specific stock
+    this.checkForSpecificStockConfiguration();
+    
     // Load previously selected strategy after strategies are loaded
     setTimeout(() => this.loadSelectedStrategy(), 100);
+  }
+
+  private checkForSpecificStockConfiguration(): void {
+    const configureFor = localStorage.getItem('configureStrategyFor');
+    if (configureFor) {
+      this.configuringForStock = configureFor;
+      console.log('Configuring strategy for specific stock:', configureFor);
+      // This will be used in saveSelectedStrategy to apply only to this stock
+    }
   }
 
   loadStrategies() {
@@ -415,11 +438,22 @@ export class StrategySelectionComponent implements OnInit {
       // Save selected strategy to localStorage
       this.saveSelectedStrategy();
       
-      // Show success notification
-      this.notificationService.showSuccess(
-        '🎯 策略配置完成',
-        `已选择 "${this.selectedStrategy.name}" 策略，开始监控您的投资组合`
-      );
+      // Show appropriate success notification
+      const configureFor = localStorage.getItem('configureStrategyFor');
+      if (configureFor) {
+        this.notificationService.showSuccess(
+          '🎯 策略配置完成',
+          `已为 ${configureFor} 配置 "${this.selectedStrategy.name}" 策略`
+        );
+      } else {
+        this.notificationService.showSuccess(
+          '🎯 策略配置完成',
+          `已选择 "${this.selectedStrategy.name}" 策略，开始监控您的投资组合`
+        );
+      }
+      
+      // Set a flag to indicate dashboard should refresh
+      localStorage.setItem('dashboardNeedsRefresh', 'true');
       
       // Navigate back to dashboard to see tracked stocks
       this.router.navigate(['/dashboard']);
@@ -433,22 +467,53 @@ export class StrategySelectionComponent implements OnInit {
 
   private saveSelectedStrategy(): void {
     if (this.selectedStrategy) {
-      // Get currently selected stocks
-      const selectedStocks = JSON.parse(localStorage.getItem('selectedStocks') || '[]');
+      const configureFor = localStorage.getItem('configureStrategyFor');
       
-      // Save strategy mapping for each selected stock
-      const strategyMapping: { [key: string]: any } = {};
-      selectedStocks.forEach((symbol: string) => {
-        strategyMapping[symbol] = this.selectedStrategy;
-      });
+      if (configureFor) {
+        // Configuring strategy for a specific stock
+        this.configureStrategyForSpecificStock(configureFor);
+      } else {
+        // Configuring strategy for all selected stocks (normal flow)
+        this.configureStrategyForAllStocks();
+      }
       
-      // Save to localStorage
-      localStorage.setItem('selectedStrategy', JSON.stringify(this.selectedStrategy));
-      localStorage.setItem('stockStrategyMapping', JSON.stringify(strategyMapping));
-      
-      console.log('Strategy saved:', this.selectedStrategy);
-      console.log('Strategy mapping saved:', strategyMapping);
+      // Clean up the specific stock configuration flag
+      localStorage.removeItem('configureStrategyFor');
     }
+  }
+
+  private configureStrategyForSpecificStock(stockSymbol: string): void {
+    // Get existing strategy mapping
+    const existingMapping = JSON.parse(localStorage.getItem('stockStrategyMapping') || '{}');
+    
+    // Update strategy for the specific stock
+    existingMapping[stockSymbol] = this.selectedStrategy;
+    
+    // Save updated mapping
+    localStorage.setItem('stockStrategyMapping', JSON.stringify(existingMapping));
+    localStorage.setItem('selectedStrategy', JSON.stringify(this.selectedStrategy));
+    
+    console.log(`Strategy configured for ${stockSymbol}:`, this.selectedStrategy);
+    console.log('Updated strategy mapping:', existingMapping);
+    console.log('LocalStorage stockStrategyMapping:', localStorage.getItem('stockStrategyMapping'));
+  }
+
+  private configureStrategyForAllStocks(): void {
+    // Get currently selected stocks
+    const selectedStocks = JSON.parse(localStorage.getItem('selectedStocks') || '[]');
+    
+    // Save strategy mapping for each selected stock
+    const strategyMapping: { [key: string]: any } = {};
+    selectedStocks.forEach((symbol: string) => {
+      strategyMapping[symbol] = this.selectedStrategy;
+    });
+    
+    // Save to localStorage
+    localStorage.setItem('selectedStrategy', JSON.stringify(this.selectedStrategy));
+    localStorage.setItem('stockStrategyMapping', JSON.stringify(strategyMapping));
+    
+    console.log('Strategy saved for all stocks:', this.selectedStrategy);
+    console.log('Strategy mapping saved:', strategyMapping);
   }
 
   private loadSelectedStrategy(): void {

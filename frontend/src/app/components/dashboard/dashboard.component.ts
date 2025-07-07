@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { Subscription, interval } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { StockService } from '../../services/stock.service';
 import { StrategyService, TradingStrategy } from '../../services/strategy.service';
 import { NotificationService } from '../../services/notification.service';
@@ -50,6 +51,18 @@ interface PortfolioSummary {
           </button>
           <button class="btn btn-outline" (click)="navigateToStockSelection()">
             <i class="fa fa-plus"></i> 添加股票
+          </button>
+          <button class="btn btn-outline" (click)="debugRefresh()">
+            <i class="fa fa-bug"></i> 调试刷新
+          </button>
+          <button class="btn btn-outline" (click)="testFormatTrigger()">
+            <i class="fa fa-bug"></i> 测试触发器
+          </button>
+          <button class="btn btn-outline" (click)="testCompleteFlow()">
+            <i class="fa fa-flask"></i> 测试完整流程
+          </button>
+          <button class="btn btn-outline" (click)="testStrategyFlow()">
+            <i class="fa fa-cog"></i> 测试策略
           </button>
           <button class="btn btn-outline btn-danger" (click)="clearAllTrackedStocks()" *ngIf="trackedStocks.length > 0">
             <i class="fa fa-trash"></i> 清除所有
@@ -217,11 +230,11 @@ interface PortfolioSummary {
               <div class="strategy-triggers">
                 <div class="trigger buy-trigger">
                   <span class="label">买入:</span>
-                  <span class="value">{{ stock.strategy.buyTrigger }}</span>
+                  <span class="value">{{ formatTrigger(stock.strategy.buyTrigger) }}</span>
                 </div>
                 <div class="trigger sell-trigger">
                   <span class="label">卖出:</span>
-                  <span class="value">{{ stock.strategy.sellTrigger }}</span>
+                  <span class="value">{{ formatTrigger(stock.strategy.sellTrigger) }}</span>
                 </div>
               </div>
             </div>
@@ -304,6 +317,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   autoRefresh = true;
   
   private refreshSubscription?: Subscription;
+  private routerSubscription?: Subscription;
+  private focusListener?: () => void;
   private refreshInterval = 30000; // 30 seconds
 
   constructor(
@@ -316,10 +331,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadDashboardData();
     this.startAutoRefresh();
+    this.subscribeToRouterEvents();
+    this.addWindowFocusListener();
+    this.checkForRefreshFlag();
   }
 
   ngOnDestroy(): void {
     this.stopAutoRefresh();
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
+    this.removeWindowFocusListener();
   }
 
   async loadDashboardData(): Promise<void> {
@@ -327,6 +349,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.error = null;
 
     try {
+      console.log('=== LOADING DASHBOARD DATA ===');
+      
       // Load tracked stocks (from localStorage or API)
       await this.loadTrackedStocks();
       
@@ -338,6 +362,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       
       this.lastUpdate = new Date();
       this.loading = false;
+      
+      console.log('=== DASHBOARD DATA LOADED ===');
+      console.log('Final tracked stocks count:', this.trackedStocks.length);
+      console.log('Tracked stocks:', this.trackedStocks.map(s => ({ symbol: s.symbol, hasStrategy: !!s.strategy })));
       
     } catch (error) {
       console.error('Dashboard data loading error:', error);
@@ -352,6 +380,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const stockStrategyMapping = localStorage.getItem('stockStrategyMapping');
     const selectedStockData = localStorage.getItem('selectedStockData');
     
+    console.log('Loading tracked stocks...');
+    console.log('selectedStocksData:', selectedStocksData);
+    console.log('stockStrategyMapping:', stockStrategyMapping);
+    console.log('selectedStockData:', selectedStockData);
+    
     if (!selectedStocksData) {
       this.trackedStocks = [];
       return;
@@ -360,6 +393,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     try {
       const selectedStocks = JSON.parse(selectedStocksData);
       const strategies = stockStrategyMapping ? JSON.parse(stockStrategyMapping) : {};
+      
+      console.log('Parsed selectedStocks:', selectedStocks);
+      console.log('Parsed strategies:', strategies);
       
       // Try to use saved stock data first, then fetch from API
       let stocksToProcess: any[] = [];
@@ -403,7 +439,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         lastUpdate: new Date()
       }));
       
-      console.log('Loaded tracked stocks:', this.trackedStocks);
+      console.log('Final tracked stocks with strategies:', this.trackedStocks);
+      console.log('Strategy mapping:', strategies);
       
     } catch (error) {
       console.error('Error loading tracked stocks:', error);
@@ -567,6 +604,124 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.notificationService.showSuccess('🔄 数据已刷新', '仪表盘数据已更新到最新状态');
   }
 
+  debugRefresh(): void {
+    console.log('=== DEBUG REFRESH ===');
+    console.log('Current localStorage data:');
+    console.log('selectedStocks:', localStorage.getItem('selectedStocks'));
+    console.log('stockStrategyMapping:', localStorage.getItem('stockStrategyMapping'));
+    console.log('selectedStockData:', localStorage.getItem('selectedStockData'));
+    console.log('configureStrategyFor:', localStorage.getItem('configureStrategyFor'));
+    console.log('selectedStrategy:', localStorage.getItem('selectedStrategy'));
+    console.log('dashboardNeedsRefresh:', localStorage.getItem('dashboardNeedsRefresh'));
+    
+    // Parse and show the strategy mapping
+    try {
+      const strategyMapping = JSON.parse(localStorage.getItem('stockStrategyMapping') || '{}');
+      console.log('Parsed strategy mapping:', strategyMapping);
+      console.log('TSLA strategy:', strategyMapping['TSLA']);
+    } catch (e) {
+      console.log('Error parsing strategy mapping:', e);
+    }
+    
+    this.loadDashboardData();
+    
+    console.log('After refresh - tracked stocks:', this.trackedStocks);
+    console.log('TSLA tracked stock:', this.trackedStocks.find(s => s.symbol === 'TSLA'));
+  }
+
+  testStrategyFlow(): void {
+    console.log('=== TESTING STRATEGY FLOW ===');
+    
+    // 1. Check if TSLA is in selected stocks
+    const selectedStocks = JSON.parse(localStorage.getItem('selectedStocks') || '[]');
+    console.log('Selected stocks:', selectedStocks);
+    console.log('Is TSLA selected?', selectedStocks.includes('TSLA'));
+    
+    // 2. Check strategy mapping
+    const strategyMapping = JSON.parse(localStorage.getItem('stockStrategyMapping') || '{}');
+    console.log('Strategy mapping:', strategyMapping);
+    console.log('TSLA strategy in mapping:', strategyMapping['TSLA']);
+    
+    // 3. Test setting a strategy for TSLA manually
+    const testStrategy = {
+      id: 'test-1',
+      name: '测试策略',
+      description: '测试用策略',
+      category: '测试',
+      riskLevel: '中等',
+      expectedReturn: '10-15%',
+      timeFrame: '1-3个月',
+      minInvestment: 5000,
+      buyTrigger: {
+        type: 'price_change',
+        value: 3,
+        unit: '%',
+        description: '上涨超过3%时买入'
+      },
+      sellTrigger: {
+        type: 'price_change',
+        value: -2,
+        unit: '%',
+        description: '下跌超过2%时卖出'
+      },
+      features: ['测试功能']
+    };
+    
+    // 4. Manually set strategy for TSLA
+    strategyMapping['TSLA'] = testStrategy;
+    localStorage.setItem('stockStrategyMapping', JSON.stringify(strategyMapping));
+    console.log('Manually set TSLA strategy:', testStrategy);
+    
+    // 5. Refresh dashboard
+    this.loadDashboardData();
+  }
+
+  private subscribeToRouterEvents(): void {
+    this.routerSubscription = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event) => {
+        const navEvent = event as NavigationEnd;
+        console.log('Router navigation event:', navEvent.url);
+        // Refresh dashboard when navigating to dashboard
+        if (navEvent.url === '/dashboard' || navEvent.url === '/') {
+          console.log('Navigating to dashboard, checking for refresh...');
+          // Check for refresh flag and refresh if needed
+          this.checkForRefreshFlag();
+        }
+      });
+  }
+
+  private addWindowFocusListener(): void {
+    this.focusListener = () => {
+      // Check if we just returned from strategy selection
+      if (this.router.url === '/dashboard') {
+        console.log('Window focus detected on dashboard, refreshing...');
+        setTimeout(() => {
+          this.loadDashboardData();
+        }, 100);
+      }
+    };
+    window.addEventListener('focus', this.focusListener);
+  }
+
+  private removeWindowFocusListener(): void {
+    if (this.focusListener) {
+      window.removeEventListener('focus', this.focusListener);
+    }
+  }
+
+  private checkForRefreshFlag(): void {
+    const needsRefresh = localStorage.getItem('dashboardNeedsRefresh');
+    if (needsRefresh === 'true') {
+      console.log('Dashboard refresh flag detected, refreshing data...');
+      localStorage.removeItem('dashboardNeedsRefresh');
+      // Small delay to ensure all localStorage operations are complete
+      setTimeout(() => {
+        this.loadDashboardData();
+      }, 100);
+    }
+  }
+
   // Navigation methods
   navigateToStockSelection(): void {
     this.router.navigate(['/stock-selection']);
@@ -611,7 +766,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   configureStrategy(stock: DashboardStock): void {
     // Navigate to strategy selection with stock symbol
+    console.log('Configuring strategy for stock:', stock.symbol);
     localStorage.setItem('configureStrategyFor', stock.symbol);
+    console.log('Set configureStrategyFor to:', stock.symbol);
     this.router.navigate(['/strategy-selection']);
   }
 
@@ -677,6 +834,154 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.notificationService.showInfo(
       '🔄 数据刷新',
       '正在更新股票数据...'
+    );
+  }
+
+  ensureTSLASelected(): void {
+    console.log('=== ENSURING TSLA IS SELECTED ===');
+    
+    // Get current selected stocks
+    let selectedStocks = JSON.parse(localStorage.getItem('selectedStocks') || '[]');
+    console.log('Current selected stocks:', selectedStocks);
+    
+    // Add TSLA if not present
+    if (!selectedStocks.includes('TSLA')) {
+      selectedStocks.push('TSLA');
+      localStorage.setItem('selectedStocks', JSON.stringify(selectedStocks));
+      console.log('Added TSLA to selected stocks');
+    }
+    
+    // Refresh dashboard
+    this.loadDashboardData();
+  }
+
+  // Utility method to format trigger objects for display
+  formatTrigger(trigger: any): string {
+    if (!trigger) return '未设置';
+    
+    if (typeof trigger === 'string') {
+      return trigger;
+    }
+    
+    if (typeof trigger === 'object' && trigger.type && trigger.value !== undefined) {
+      const value = trigger.value;
+      const unit = trigger.unit || '';
+      const description = trigger.description || '';
+      
+      // Format based on trigger type
+      if (trigger.type === 'price_change') {
+        return `价格变动 ${value >= 0 ? '+' : ''}${value}${unit}`;
+      } else if (trigger.type === 'price_target') {
+        return `目标价格 $${value}`;
+      } else if (trigger.type === 'volume') {
+        return `交易量 ${value}${unit}`;
+      } else if (trigger.type === 'rsi') {
+        return `RSI ${value}`;
+      } else if (trigger.type === 'moving_average') {
+        return `移动平均线 ${value}${unit}`;
+      } else if (trigger.type === 'percentage') {
+        return `${value}${unit}`;
+      } else {
+        // Fallback to description if available, otherwise show type and value
+        return description || `${trigger.type}: ${value}${unit}`;
+      }
+    }
+    
+    // If it's an object but doesn't have expected structure, try to stringify it
+    if (typeof trigger === 'object') {
+      return JSON.stringify(trigger);
+    }
+    
+    return '未知触发条件';
+  }
+
+  // Test method to verify the formatTrigger function
+  testFormatTrigger(): void {
+    console.log('=== TESTING formatTrigger METHOD ===');
+    
+    const testTriggers = [
+      { type: 'price_change', value: 5, unit: '%', description: '价格上涨超过5%时买入' },
+      { type: 'price_change', value: -3, unit: '%', description: '价格下跌超过3%时卖出' },
+      { type: 'price_target', value: 350, unit: '', description: '目标价格$350' },
+      { type: 'rsi', value: 70, unit: '', description: 'RSI超过70' },
+      'Simple string trigger',
+      null,
+      undefined,
+      { randomObject: true }
+    ];
+    
+    testTriggers.forEach((trigger, index) => {
+      console.log(`Test ${index + 1}:`, trigger, '→', this.formatTrigger(trigger));
+    });
+  }
+
+  // Test method to simulate complete strategy configuration flow
+  testCompleteFlow(): void {
+    console.log('=== TESTING COMPLETE STRATEGY FLOW ===');
+    
+    // Clear existing data
+    localStorage.removeItem('selectedStocks');
+    localStorage.removeItem('stockStrategyMapping');
+    localStorage.removeItem('selectedStrategy');
+    localStorage.removeItem('configureStrategyFor');
+    
+    // Set up TSLA as selected stock
+    localStorage.setItem('selectedStocks', JSON.stringify(['TSLA']));
+    console.log('✓ Added TSLA to selected stocks');
+    
+    // Create a complete strategy object
+    const testStrategy = {
+      id: 'test-classic-4-20',
+      name: '经典4%-20%策略',
+      description: '稳健型策略，适合中长期投资',
+      category: '稳健型',
+      riskLevel: '低',
+      expectedReturn: '15-25%',
+      timeFrame: '3-6个月',
+      minInvestment: 1000,
+      buyTrigger: {
+        type: 'price_change',
+        value: -4,
+        unit: '%',
+        description: '当股价下跌4%时买入'
+      },
+      sellTrigger: {
+        type: 'price_change',
+        value: 20,
+        unit: '%',
+        description: '当股价上涨20%时卖出'
+      },
+      features: ['风险较低', '适合新手', '长期持有']
+    };
+    
+    // Configure strategy for TSLA
+    const strategyMapping = { 'TSLA': testStrategy };
+    localStorage.setItem('stockStrategyMapping', JSON.stringify(strategyMapping));
+    localStorage.setItem('selectedStrategy', JSON.stringify(testStrategy));
+    
+    console.log('✓ Strategy configured for TSLA:', testStrategy);
+    console.log('✓ Strategy mapping saved:', strategyMapping);
+    
+    // Set up stock data
+    const stockData = [{
+      symbol: 'TSLA',
+      name: 'Tesla, Inc.',
+      price: 292.55,
+      change: -7.23,
+      changePercent: -7.23,
+      volume: 85000000
+    }];
+    localStorage.setItem('selectedStockData', JSON.stringify(stockData));
+    
+    // Refresh dashboard
+    this.loadDashboardData();
+    
+    console.log('✓ Dashboard refreshed');
+    console.log('✓ Check the dashboard - TSLA should now show strategy details');
+    
+    this.notificationService.showSuccess(
+      '🧪 测试完成',
+      'TSLA 策略已配置，请检查仪表盘显示'
     );
   }
 }
