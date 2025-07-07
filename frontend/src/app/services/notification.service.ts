@@ -18,6 +18,8 @@ export interface NotificationSettings {
   enableEmail: boolean;
   enableBrowser: boolean;
   enableSound: boolean;
+  enableSMS: boolean;
+  phoneNumber: string;
   priceAlerts: boolean;
   strategyAlerts: boolean;
   marketAlerts: boolean;
@@ -35,6 +37,8 @@ export class NotificationService {
     enableEmail: false,
     enableBrowser: true,
     enableSound: true,
+    enableSMS: false,
+    phoneNumber: '',
     priceAlerts: true,
     strategyAlerts: true,
     marketAlerts: true
@@ -164,6 +168,26 @@ export class NotificationService {
     }
   }
 
+  // SMS Notifications
+  async sendSMSNotification(message: string): Promise<boolean> {
+    if (!this.notificationSettings.enableSMS || !this.notificationSettings.phoneNumber) {
+      return false;
+    }
+
+    try {
+      const response = await this.http.post('/api/notifications/sms', {
+        to: this.notificationSettings.phoneNumber,
+        message
+      }).toPromise();
+
+      this.showSuccess('📱 短信通知', '短信通知已发送');
+      return true;
+    } catch (error) {
+      this.showError('📱 短信失败', '短信发送失败，请检查手机号码设置');
+      return false;
+    }
+  }
+
   // Browser Notifications
   async showBrowserNotification(title: string, body: string, icon?: string): Promise<void> {
     if (!this.notificationSettings.enableBrowser) {
@@ -206,6 +230,13 @@ export class NotificationService {
     
     if (this.notificationSettings.enableBrowser) {
       this.showBrowserNotification('股票监控系统', '浏览器通知测试成功！');
+    }
+  }
+
+  // Test SMS notification
+  testSMSNotification(): void {
+    if (this.notificationSettings.enableSMS && this.notificationSettings.phoneNumber) {
+      this.sendSMSNotification('股票监控系统 - 这是一条测试短信，确认您的手机号码可以正常接收通知。');
     }
   }
 

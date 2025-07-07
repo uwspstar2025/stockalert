@@ -51,6 +51,9 @@ interface PortfolioSummary {
           <button class="btn btn-outline" (click)="navigateToStockSelection()">
             <i class="fa fa-plus"></i> 添加股票
           </button>
+          <button class="btn btn-outline btn-danger" (click)="clearAllTrackedStocks()" *ngIf="trackedStocks.length > 0">
+            <i class="fa fa-trash"></i> 清除所有
+          </button>
         </div>
       </div>
 
@@ -346,7 +349,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private async loadTrackedStocks(): Promise<void> {
     // Get selected stocks from localStorage
     const selectedStocksData = localStorage.getItem('selectedStocks');
-    const selectedStrategies = localStorage.getItem('selectedStrategies');
+    const stockStrategyMapping = localStorage.getItem('stockStrategyMapping');
+    const selectedStockData = localStorage.getItem('selectedStockData');
     
     if (!selectedStocksData) {
       this.trackedStocks = [];
@@ -355,29 +359,55 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     try {
       const selectedStocks = JSON.parse(selectedStocksData);
-      const strategies = selectedStrategies ? JSON.parse(selectedStrategies) : {};
+      const strategies = stockStrategyMapping ? JSON.parse(stockStrategyMapping) : {};
       
-      // Get real-time data for selected stocks
-      const response = await this.stockService.getAllStocks().toPromise();
+      // Try to use saved stock data first, then fetch from API
+      let stocksToProcess: any[] = [];
       
-      if (response.success) {
-        this.trackedStocks = response.data
-          .filter((stock: any) => selectedStocks.includes(stock.symbol))
-          .map((stock: any) => ({
-            symbol: stock.symbol,
-            name: stock.name,
-            price: stock.price,
-            change: stock.change,
-            changePercent: stock.change,
-            volume: stock.volume || 0,
-            strategy: strategies[stock.symbol],
-            alerts: this.generateAlertsForStock(stock, strategies[stock.symbol]),
-            lastUpdate: new Date()
-          }));
+      if (selectedStockData) {
+        // Use saved stock data
+        stocksToProcess = JSON.parse(selectedStockData);
+        console.log('Using saved stock data:', stocksToProcess);
+      } else {
+        // Fetch from API
+        try {
+          const response = await this.stockService.getAllStocks().toPromise();
+          if (response.success) {
+            stocksToProcess = response.data.filter((stock: any) => selectedStocks.includes(stock.symbol));
+          }
+        } catch (apiError) {
+          console.warn('API failed, using fallback data:', apiError);
+          // Use fallback data if API fails
+          stocksToProcess = this.getFallbackStocks()
+            .filter(stock => selectedStocks.includes(stock.symbol))
+            .map(stock => ({
+              symbol: stock.symbol,
+              name: stock.name,
+              price: stock.price,
+              change: stock.changePercent,
+              volume: stock.volume
+            }));
+        }
       }
+      
+      // Map to dashboard stock format
+      this.trackedStocks = stocksToProcess.map((stock: any) => ({
+        symbol: stock.symbol,
+        name: stock.name,
+        price: stock.price,
+        change: stock.change || 0,
+        changePercent: stock.change || 0,
+        volume: stock.volume || 0,
+        strategy: strategies[stock.symbol],
+        alerts: this.generateAlertsForStock(stock, strategies[stock.symbol]),
+        lastUpdate: new Date()
+      }));
+      
+      console.log('Loaded tracked stocks:', this.trackedStocks);
+      
     } catch (error) {
       console.error('Error loading tracked stocks:', error);
-      // Use fallback data
+      // Use fallback data if everything fails
       this.trackedStocks = this.getFallbackStocks();
     }
   }
@@ -625,5 +655,28 @@ export class DashboardComponent implements OnInit, OnDestroy {
       'alert': 'fa-bell'
     };
     return iconMap[type] || 'fa-circle';
+  }
+
+  // Utility methods for managing tracked stocks
+  clearAllTrackedStocks(): void {
+    localStorage.removeItem('selectedStocks');
+    localStorage.removeItem('selectedStockData');
+    localStorage.removeItem('stockStrategyMapping');
+    localStorage.removeItem('selectedStrategy');
+    this.trackedStocks = [];
+    this.calculatePortfolioSummary();
+    
+    this.notificationService.showInfo(
+      '🗑️ 清除完成',
+      '所有追踪的股票已清除'
+    );
+  }
+
+  refreshTrackedStocks(): void {
+    this.loadDashboardData();
+    this.notificationService.showInfo(
+      '🔄 数据刷新',
+      '正在更新股票数据...'
+    );
   }
 }

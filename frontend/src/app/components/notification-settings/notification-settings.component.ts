@@ -65,6 +65,34 @@ import { NotificationService, NotificationSettings } from '../../services/notifi
           </div>
         </div>
 
+        <!-- SMS Settings -->
+        <div class="setting-section">
+          <h3><i class="fa fa-mobile-alt"></i> SMS 通知设置</h3>
+          
+          <div class="form-group">
+            <label class="switch-label">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="settings.enableSMS"
+                (change)="updateSettings()">
+              <span class="switch"></span>
+              启用短信通知
+            </label>
+          </div>
+          
+          <div class="form-group" *ngIf="settings.enableSMS">
+            <label for="phoneNumber">手机号码</label>
+            <input 
+              type="tel" 
+              id="phoneNumber"
+              [(ngModel)]="settings.phoneNumber"
+              (blur)="updateSettings()"
+              placeholder="输入您的手机号码 (如: +86 138 0000 0000)"
+              class="form-control">
+            <small class="form-hint">请输入完整的手机号码，包括国家代码</small>
+          </div>
+        </div>
+
         <!-- Alert Types -->
         <div class="setting-section">
           <h3><i class="fa fa-filter"></i> 通知类型</h3>
@@ -118,6 +146,9 @@ import { NotificationService, NotificationSettings } from '../../services/notifi
             <button class="btn btn-outline" (click)="testEmailNotification()" *ngIf="settings.enableEmail && settings.email">
               <i class="fa fa-envelope"></i> 测试邮件通知
             </button>
+            <button class="btn btn-outline" (click)="testSMSNotification()" *ngIf="settings.enableSMS && settings.phoneNumber">
+              <i class="fa fa-mobile-alt"></i> 测试短信通知
+            </button>
           </div>
         </div>
 
@@ -148,6 +179,8 @@ export class NotificationSettingsComponent implements OnInit {
     enableEmail: false,
     enableBrowser: true,
     enableSound: true,
+    enableSMS: false,
+    phoneNumber: '',
     priceAlerts: true,
     strategyAlerts: true,
     marketAlerts: true
@@ -185,6 +218,8 @@ export class NotificationSettingsComponent implements OnInit {
       enableEmail: false,
       enableBrowser: true,
       enableSound: true,
+      enableSMS: false,
+      phoneNumber: '',
       priceAlerts: true,
       strategyAlerts: true,
       marketAlerts: true
@@ -211,6 +246,12 @@ export class NotificationSettingsComponent implements OnInit {
         '股票监控系统 - 测试邮件',
         `这是一封测试邮件，确认您的邮箱 ${this.settings.email} 可以正常接收通知。`
       );
+    }
+  }
+
+  testSMSNotification(): void {
+    if (this.settings.phoneNumber) {
+      this.notificationService.testSMSNotification();
     }
   }
 }

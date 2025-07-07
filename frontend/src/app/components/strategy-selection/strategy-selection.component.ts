@@ -311,6 +311,9 @@ export class StrategySelectionComponent implements OnInit {
   ngOnInit() {
     this.loadStrategies();
     this.loadCategories();
+    
+    // Load previously selected strategy after strategies are loaded
+    setTimeout(() => this.loadSelectedStrategy(), 100);
   }
 
   loadStrategies() {
@@ -409,10 +412,58 @@ export class StrategySelectionComponent implements OnInit {
 
   proceedWithStrategy() {
     if (this.selectedStrategy) {
-      // 导航到追踪系统，携带选择的策略
-      this.router.navigate(['/tracking-system'], {
-        queryParams: { strategy: this.selectedStrategy.id }
+      // Save selected strategy to localStorage
+      this.saveSelectedStrategy();
+      
+      // Show success notification
+      this.notificationService.showSuccess(
+        '🎯 策略配置完成',
+        `已选择 "${this.selectedStrategy.name}" 策略，开始监控您的投资组合`
+      );
+      
+      // Navigate back to dashboard to see tracked stocks
+      this.router.navigate(['/dashboard']);
+    } else {
+      this.notificationService.showWarning(
+        '⚠️ 请选择策略',
+        '请选择一个交易策略才能开始监控'
+      );
+    }
+  }
+
+  private saveSelectedStrategy(): void {
+    if (this.selectedStrategy) {
+      // Get currently selected stocks
+      const selectedStocks = JSON.parse(localStorage.getItem('selectedStocks') || '[]');
+      
+      // Save strategy mapping for each selected stock
+      const strategyMapping: { [key: string]: any } = {};
+      selectedStocks.forEach((symbol: string) => {
+        strategyMapping[symbol] = this.selectedStrategy;
       });
+      
+      // Save to localStorage
+      localStorage.setItem('selectedStrategy', JSON.stringify(this.selectedStrategy));
+      localStorage.setItem('stockStrategyMapping', JSON.stringify(strategyMapping));
+      
+      console.log('Strategy saved:', this.selectedStrategy);
+      console.log('Strategy mapping saved:', strategyMapping);
+    }
+  }
+
+  private loadSelectedStrategy(): void {
+    try {
+      const saved = localStorage.getItem('selectedStrategy');
+      if (saved) {
+        const strategy = JSON.parse(saved);
+        // Find and select the previously chosen strategy
+        const foundStrategy = this.strategies.find(s => s.id === strategy.id);
+        if (foundStrategy) {
+          this.selectedStrategy = foundStrategy;
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to load selected strategy:', error);
     }
   }
 

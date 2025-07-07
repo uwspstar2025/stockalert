@@ -252,4 +252,75 @@ router.post("/test", (req, res) => {
   });
 });
 
+// SMS notification endpoint
+router.post("/sms", async (req, res) => {
+  try {
+    const { to, message } = req.body;
+
+    if (!to || !message) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required fields: to, message",
+      });
+    }
+
+    // Validate phone number format (basic validation)
+    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+    if (!phoneRegex.test(to.replace(/[\s\-\(\)]/g, ""))) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid phone number format",
+      });
+    }
+
+    // For demo purposes, we'll simulate SMS sending
+    // In production, integrate with SMS services like Twilio, AWS SNS, etc.
+
+    // Simulate SMS sending delay
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    // Log SMS for demo (in production, use actual SMS service)
+    console.log(`SMS Notification sent to ${to}:`);
+    console.log(`Message: ${message}`);
+
+    // Store notification record
+    const notification = {
+      id: Date.now().toString(),
+      type: "sms",
+      to: to,
+      message: message,
+      timestamp: new Date().toISOString(),
+      status: "sent",
+    };
+
+    notifications.push(notification);
+
+    /*
+    // Production SMS sending example using Twilio:
+    const twilio = require('twilio');
+    const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+    
+    await client.messages.create({
+      body: message,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: to
+    });
+    */
+
+    res.json({
+      success: true,
+      message: "SMS notification sent successfully",
+      notificationId: notification.id,
+      timestamp: notification.timestamp,
+    });
+  } catch (error) {
+    console.error("SMS notification error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to send SMS notification",
+      details: error.message,
+    });
+  }
+});
+
 module.exports = router;

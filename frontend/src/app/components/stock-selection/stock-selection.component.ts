@@ -285,10 +285,14 @@ export class StockSelectionComponent implements OnInit {
             if (response.success) {
               this.stocks = response.data.map((stock: any, index: number) => ({
                 ...stock,
-                selected: index === 0,
+                selected: false, // Will be set by loadSelectedStocks()
                 featured: index === 0,
                 category: this.getRandomCategory()
               }));
+              
+              // Load previously selected stocks
+              this.loadSelectedStocks();
+              
               console.log('处理后的股票数据:', this.stocks);
             } else {
               this.error = '获取股票数据失败';
@@ -316,13 +320,17 @@ export class StockSelectionComponent implements OnInit {
   useFallbackData() {
     console.log('使用备用数据');
     this.stocks = [
-      { symbol: 'TSLA', name: 'Tesla Inc.', price: 177.97, change: 2.4, selected: true, featured: true, volume: 45000000, category: 'tech' },
+      { symbol: 'TSLA', name: 'Tesla Inc.', price: 177.97, change: 2.4, selected: false, featured: true, volume: 45000000, category: 'tech' },
       { symbol: 'AAPL', name: 'Apple Inc.', price: 189.25, change: 0.8, selected: false, volume: 35000000, category: 'tech' },
       { symbol: 'GOOGL', name: 'Alphabet Inc.', price: 2456.78, change: 1.5, selected: false, volume: 28000000, category: 'tech' },
       { symbol: 'MSFT', name: 'Microsoft Corp.', price: 345.67, change: -0.5, selected: false, volume: 32000000, category: 'tech' },
       { symbol: 'JPM', name: 'JPMorgan Chase', price: 145.32, change: 1.2, selected: false, volume: 15000000, category: 'finance' },
       { symbol: 'XOM', name: 'Exxon Mobil', price: 98.45, change: -1.8, selected: false, volume: 22000000, category: 'energy' }
     ];
+    
+    // Load previously selected stocks
+    this.loadSelectedStocks();
+    
     this.filterStocks();
   }
 
@@ -343,6 +351,9 @@ export class StockSelectionComponent implements OnInit {
     stock.selected = !stock.selected;
     this.filterStocks();
     
+    // Save selected stocks to localStorage
+    this.saveSelectedStocks();
+    
     // Show notification when stock is selected/deselected
     if (stock.selected) {
       this.notificationService.showSuccess(
@@ -354,6 +365,32 @@ export class StockSelectionComponent implements OnInit {
         'ℹ️ 股票已移除',
         `${stock.symbol} (${stock.name}) 已从监控列表移除`
       );
+    }
+  }
+
+  private saveSelectedStocks(): void {
+    const selectedStocks = this.stocks
+      .filter(stock => stock.selected)
+      .map(stock => stock.symbol);
+    
+    localStorage.setItem('selectedStocks', JSON.stringify(selectedStocks));
+    
+    // Also save complete stock data for dashboard use
+    const selectedStockData = this.stocks.filter(stock => stock.selected);
+    localStorage.setItem('selectedStockData', JSON.stringify(selectedStockData));
+  }
+
+  private loadSelectedStocks(): void {
+    try {
+      const saved = localStorage.getItem('selectedStocks');
+      if (saved) {
+        const selectedSymbols = JSON.parse(saved);
+        this.stocks.forEach(stock => {
+          stock.selected = selectedSymbols.includes(stock.symbol);
+        });
+      }
+    } catch (error) {
+      console.warn('Failed to load selected stocks:', error);
     }
   }
 
