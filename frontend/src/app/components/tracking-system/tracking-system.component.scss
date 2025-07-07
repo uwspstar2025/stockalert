@@ -7,21 +7,103 @@
   min-height: 100vh;
 }
 
-.header {
-  text-align: center;
+// Deprecation Notice Styles
+.deprecation-notice {
+  background: linear-gradient(135deg, #007acc 0%, #005a9e 100%);
+  border-radius: 12px;
+  padding: 32px;
   margin-bottom: 40px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 122, 204, 0.3);
   
-  h1 {
-    font-size: 42px;
-    font-weight: 700;
+  .notice-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
     margin-bottom: 16px;
-    color: var(--text-primary);
+    
+    mat-icon {
+      font-size: 32px;
+      color: #ffffff;
+    }
+    
+    h2 {
+      color: #ffffff;
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0;
+    }
   }
   
   p {
-    font-size: 18px;
-    color: var(--text-secondary);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
   }
+  
+  .btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    
+    mat-icon {
+      font-size: 20px;
+    }
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.25);
+      border-color: rgba(255, 255, 255, 0.5);
+      transform: translateY(-2px);
+    }
+  }
+}
+
+.legacy-content {
+  opacity: 0.6;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      rgba(255, 255, 255, 0.05) 10px,
+      rgba(255, 255, 255, 0.05) 20px
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+}
+
+.deprecated-badge {
+  background: var(--error-color);
+  color: #ffffff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: 12px;
+  vertical-align: super;
 }
 
 .alert-banner {

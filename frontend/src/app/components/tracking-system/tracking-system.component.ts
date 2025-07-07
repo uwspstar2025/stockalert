@@ -6,10 +6,23 @@ import { StockService } from '../../services/stock.service';
   selector: 'app-tracking-system',
   template: `
     <div class="container">
-      <div class="header">
-        <h1>股票追踪系统</h1>
-        <p>监控1只股票-经典4%-20%策略</p>
+      <div class="deprecation-notice">
+        <div class="notice-header">
+          <mat-icon>info</mat-icon>
+          <h2>功能已升级</h2>
+        </div>
+        <p>股票追踪系统已整合到新的仪表盘中，提供更好的用户体验和更多功能。</p>
+        <button class="btn btn-primary" (click)="navigateToDashboard()">
+          <mat-icon>dashboard</mat-icon>
+          前往新仪表盘
+        </button>
       </div>
+      
+      <div class="legacy-content">
+        <div class="header">
+          <h1>股票追踪系统 <span class="deprecated-badge">已弃用</span></h1>
+          <p>监控1只股票-经典4%-20%策略</p>
+        </div>
 
       <div class="alert-banner" *ngIf="connectionError">
         <mat-icon>error</mat-icon>
@@ -163,6 +176,10 @@ export class TrackingSystemComponent implements OnInit {
 
   dismissAlert() {
     this.connectionError = false;
+  }
+
+  navigateToDashboard() {
+    this.router.navigate(['/dashboard']);
   }
 
   restartService() {

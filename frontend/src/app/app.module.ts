@@ -32,13 +32,15 @@ import { ChatbotComponent } from './components/chatbot/chatbot.component';
 import { AddStockComponent } from './components/add-stock/add-stock.component';
 import { AlertContainerComponent } from './components/alert-container/alert-container.component';
 import { NotificationSettingsComponent } from './components/notification-settings/notification-settings.component';
+import { DashboardComponent } from './components/dashboard/dashboard.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: '/stock-selection', pathMatch: 'full' },
+  { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
+  { path: 'dashboard', component: DashboardComponent },
   { path: 'strategy-selection', component: StrategySelectionComponent },
   { path: 'stock-selection', component: StockSelectionComponent },
   { path: 'portfolio', component: PortfolioComponent },
-  { path: 'tracking', component: TrackingSystemComponent },
+  { path: 'tracking', component: TrackingSystemComponent }, // Deprecated - use dashboard instead
   { path: 'analysis', component: AnalysisComponent },
   { path: 'alerts', component: AlertsComponent },
   { path: 'help', component: HelpComponent },
@@ -61,7 +63,8 @@ const routes: Routes = [
     ChatbotComponent,
     AddStockComponent,
     AlertContainerComponent,
-    NotificationSettingsComponent
+    NotificationSettingsComponent,
+    DashboardComponent
   ],
   imports: [
     BrowserModule,
