@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { StrategyService, TradingStrategy, BacktestData } from '../../services/strategy.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-strategy-selection',
@@ -303,7 +304,8 @@ export class StrategySelectionComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private strategyService: StrategyService
+    private strategyService: StrategyService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit() {
@@ -360,6 +362,12 @@ export class StrategySelectionComponent implements OnInit {
   selectStrategy(strategy: TradingStrategy) {
     this.selectedStrategy = strategy;
     this.strategyService.selectStrategy(strategy);
+    
+    // Show notification when strategy is selected
+    this.notificationService.showSuccess(
+      '🎯 策略已选择',
+      `${strategy.name} 策略已配置，风险级别：${strategy.riskLevel}`
+    );
   }
 
   getRiskClass(riskLevel: string): string {

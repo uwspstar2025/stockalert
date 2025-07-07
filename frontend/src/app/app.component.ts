@@ -4,6 +4,7 @@ import { Component } from '@angular/core';
   selector: 'app-root',
   template: `
     <div class="app-container">
+      <app-alert-container></app-alert-container>
       <app-sidebar></app-sidebar>
       <div class="main-layout">
         <app-navigation></app-navigation>

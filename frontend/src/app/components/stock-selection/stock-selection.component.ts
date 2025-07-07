@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { StockService } from '../../services/stock.service';
+import { NotificationService } from '../../services/notification.service';
 
 interface Stock {
   symbol: string;
@@ -136,6 +137,109 @@ interface Stock {
           🚀 下一步：选择交易策略
         </button>
       </div>
+
+      <!-- 股票详情弹窗 -->
+      <div *ngIf="showStockDetailsModal" class="stock-details-modal" (click)="closeStockDetails()">
+        <div class="modal-content stock-details-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h3>{{ selectedStockDetails?.symbol }} - 股票详情</h3>
+            <button class="close-btn" (click)="closeStockDetails()">×</button>
+          </div>
+          
+          <div *ngIf="selectedStockDetails" class="stock-details-body">
+            <!-- 基本信息 -->
+            <div class="details-section">
+              <h4><i class="fa fa-info-circle"></i> 基本信息</h4>
+              <div class="info-grid">
+                <div class="info-item">
+                  <span class="info-label">公司名称</span>
+                  <span class="info-value">{{ selectedStockDetails.name }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">股票代码</span>
+                  <span class="info-value">{{ selectedStockDetails.symbol }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">当前价格</span>
+                  <span class="info-value price">\${{ selectedStockDetails.price.toFixed(2) }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">涨跌幅</span>
+                  <span class="info-value" [ngClass]="selectedStockDetails.change >= 0 ? 'positive' : 'negative'">
+                    {{ selectedStockDetails.change >= 0 ? '+' : '' }}{{ selectedStockDetails.change.toFixed(2) }}%
+                  </span>
+                </div>
+                <div class="info-item" *ngIf="selectedStockDetails.volume">
+                  <span class="info-label">成交量</span>
+                  <span class="info-value">{{ selectedStockDetails.volume.toLocaleString() }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 市场表现 -->
+            <div class="details-section">
+              <h4><i class="fa fa-chart-line"></i> 市场表现</h4>
+              <div class="performance-metrics">
+                <div class="metric-card">
+                  <div class="metric-icon positive">📈</div>
+                  <div class="metric-info">
+                    <span class="metric-label">今日表现</span>
+                    <span class="metric-value" [ngClass]="selectedStockDetails.change >= 0 ? 'positive' : 'negative'">
+                      {{ selectedStockDetails.change >= 0 ? '+' : '' }}{{ selectedStockDetails.change.toFixed(2) }}%
+                    </span>
+                  </div>
+                </div>
+                
+                <div class="metric-card">
+                  <div class="metric-icon">💰</div>
+                  <div class="metric-info">
+                    <span class="metric-label">市场价值</span>
+                    <span class="metric-value">\${{ selectedStockDetails.price.toFixed(2) }}</span>
+                  </div>
+                </div>
+                
+                <div class="metric-card" *ngIf="selectedStockDetails.volume">
+                  <div class="metric-icon">📊</div>
+                  <div class="metric-info">
+                    <span class="metric-label">交易活跃度</span>
+                    <span class="metric-value">{{ getVolumeStatus(selectedStockDetails.volume) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 投资建议 -->
+            <div class="details-section">
+              <h4><i class="fa fa-lightbulb"></i> 投资建议</h4>
+              <div class="investment-advice">
+                <div class="advice-card" [ngClass]="getInvestmentRating(selectedStockDetails)">
+                  <div class="advice-header">
+                    <span class="advice-rating">{{ getInvestmentRatingText(selectedStockDetails) }}</span>
+                    <span class="advice-icon">{{ getInvestmentIcon(selectedStockDetails) }}</span>
+                  </div>
+                  <p class="advice-description">{{ getInvestmentAdvice(selectedStockDetails) }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 快速操作 -->
+            <div class="details-section">
+              <h4><i class="fa fa-rocket"></i> 快速操作</h4>
+              <div class="quick-actions">
+                <button class="btn btn-primary action-btn" (click)="addToWatchlist(selectedStockDetails)">
+                  <i class="fa fa-eye"></i> 添加到监控
+                </button>
+                <button class="btn btn-success action-btn" (click)="selectForTrading(selectedStockDetails)">
+                  <i class="fa fa-plus"></i> 选择交易
+                </button>
+                <button class="btn btn-outline action-btn" (click)="shareStock(selectedStockDetails)">
+                  <i class="fa fa-share"></i> 分享
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   `,
   styleUrls: ['./stock-selection.component.scss']
@@ -151,9 +255,14 @@ export class StockSelectionComponent implements OnInit {
   selectedMarket = '';
   showOnlySelected = false;
 
+  // Stock details modal
+  showStockDetailsModal = false;
+  selectedStockDetails: Stock | null = null;
+
   constructor(
     private router: Router,
-    private stockService: StockService
+    private stockService: StockService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit() {
@@ -233,6 +342,19 @@ export class StockSelectionComponent implements OnInit {
   toggleStock(stock: Stock) {
     stock.selected = !stock.selected;
     this.filterStocks();
+    
+    // Show notification when stock is selected/deselected
+    if (stock.selected) {
+      this.notificationService.showSuccess(
+        '✅ 股票已选择',
+        `${stock.symbol} (${stock.name}) 已添加到监控列表`
+      );
+    } else {
+      this.notificationService.showInfo(
+        'ℹ️ 股票已移除',
+        `${stock.symbol} (${stock.name}) 已从监控列表移除`
+      );
+    }
   }
 
   getSelectedCount(): number {
@@ -280,11 +402,96 @@ export class StockSelectionComponent implements OnInit {
 
   viewDetails(stock: Stock) {
     console.log('View details for', stock.symbol);
+    this.selectedStockDetails = stock;
+    this.showStockDetailsModal = true;
+  }
+
+  closeStockDetails() {
+    this.showStockDetailsModal = false;
+    this.selectedStockDetails = null;
+  }
+
+  // Stock details helper methods
+  getVolumeStatus(volume: number | undefined): string {
+    if (!volume) return '数据不可用';
+    if (volume > 1000000) return '高活跃度';
+    if (volume > 500000) return '中等活跃度';
+    return '低活跃度';
+  }
+
+  getInvestmentRating(stock: Stock): string {
+    if (stock.change >= 5) return 'rating-excellent';
+    if (stock.change >= 2) return 'rating-good';
+    if (stock.change >= 0) return 'rating-neutral';
+    if (stock.change >= -2) return 'rating-caution';
+    return 'rating-poor';
+  }
+
+  getInvestmentRatingText(stock: Stock): string {
+    if (stock.change >= 5) return '强烈推荐';
+    if (stock.change >= 2) return '推荐买入';
+    if (stock.change >= 0) return '中性持有';
+    if (stock.change >= -2) return '谨慎观望';
+    return '建议避开';
+  }
+
+  getInvestmentIcon(stock: Stock): string {
+    if (stock.change >= 5) return '🚀';
+    if (stock.change >= 2) return '📈';
+    if (stock.change >= 0) return '📊';
+    if (stock.change >= -2) return '⚠️';
+    return '📉';
+  }
+
+  getInvestmentAdvice(stock: Stock): string {
+    if (stock.change >= 5) return '该股票表现强劲，具有很好的上涨潜力，建议考虑买入。';
+    if (stock.change >= 2) return '股票表现良好，适合短期投资，建议适量买入。';
+    if (stock.change >= 0) return '股票表现平稳，可以继续持有观察后续走势。';
+    if (stock.change >= -2) return '股票有小幅下跌，建议谨慎观望，等待更好的买入时机。';
+    return '股票下跌较多，建议暂时避开，等待市场回暖后再考虑。';
+  }
+
+  addToWatchlist(stock: Stock) {
+    console.log('Adding to watchlist:', stock.symbol);
+    // TODO: Implement watchlist functionality
+    this.closeStockDetails();
+  }
+
+  selectForTrading(stock: Stock) {
+    console.log('Selecting for trading:', stock.symbol);
+    this.toggleStock(stock);
+    this.closeStockDetails();
+    
+    this.notificationService.showSuccess(
+      '🚀 交易选择',
+      `${stock.symbol} 已选择用于交易策略配置`
+    );
+  }
+
+  shareStock(stock: Stock) {
+    console.log('Sharing stock:', stock.symbol);
+    // TODO: Implement share functionality
+    if (navigator.share) {
+      navigator.share({
+        title: `${stock.symbol} - ${stock.name}`,
+        text: `查看 ${stock.name} (${stock.symbol}) 的最新股价：$${stock.price.toFixed(2)}`,
+        url: window.location.href
+      });
+    }
   }
 
   proceedToNext() {
     if (this.getSelectedCount() > 0) {
+      this.notificationService.showInfo(
+        '🎯 进入策略选择',
+        `已选择 ${this.getSelectedCount()} 只股票，开始配置交易策略`
+      );
       this.router.navigate(['/strategy-selection']);
+    } else {
+      this.notificationService.showWarning(
+        '⚠️ 请选择股票',
+        '请至少选择一只股票才能进入策略配置'
+      );
     }
   }
 }

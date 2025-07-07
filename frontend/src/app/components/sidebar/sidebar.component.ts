@@ -69,6 +69,12 @@ export class SidebarComponent implements OnInit {
       isActive: false
     },
     {
+      icon: 'notifications_active',
+      label: '通知设置',
+      route: '/notification-settings',
+      isActive: false
+    },
+    {
       icon: 'help',
       label: '帮助',
       route: '/help',

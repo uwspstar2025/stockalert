@@ -30,6 +30,8 @@ import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { HelpComponent } from './components/help/help.component';
 import { ChatbotComponent } from './components/chatbot/chatbot.component';
 import { AddStockComponent } from './components/add-stock/add-stock.component';
+import { AlertContainerComponent } from './components/alert-container/alert-container.component';
+import { NotificationSettingsComponent } from './components/notification-settings/notification-settings.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/stock-selection', pathMatch: 'full' },
@@ -40,7 +42,8 @@ const routes: Routes = [
   { path: 'analysis', component: AnalysisComponent },
   { path: 'alerts', component: AlertsComponent },
   { path: 'help', component: HelpComponent },
-  { path: 'add-stock', component: AddStockComponent }
+  { path: 'add-stock', component: AddStockComponent },
+  { path: 'notification-settings', component: NotificationSettingsComponent }
 ];
 
 @NgModule({
@@ -56,7 +59,9 @@ const routes: Routes = [
     SidebarComponent,
     HelpComponent,
     ChatbotComponent,
-    AddStockComponent
+    AddStockComponent,
+    AlertContainerComponent,
+    NotificationSettingsComponent
   ],
   imports: [
     BrowserModule,

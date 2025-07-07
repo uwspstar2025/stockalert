@@ -9,6 +9,7 @@ const stockRoutes = require("./routes/stocks");
 const alertRoutes = require("./routes/alerts");
 const userRoutes = require("./routes/users");
 const strategiesRoutes = require("./routes/strategies");
+const notificationRoutes = require("./routes/notifications");
 const { initializeWebSocket } = require("./services/websocket");
 
 const app = express();
@@ -55,6 +56,7 @@ app.use("/api/stocks", stockRoutes);
 app.use("/api/alerts", alertRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/strategies", strategiesRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
