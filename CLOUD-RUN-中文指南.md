@@ -7,7 +7,8 @@
 ### 🔥 为什么新手应该选择 Cloud Run？
 
 #### 1. 超级简单
-```
+
+```txt
 传统部署方法:
 购买服务器 → 安装操作系统 → 配置环境 → 安装数据库 → 配置防火墙 → 部署代码 → 监控维护
 ⏰ 需要几天时间学习
@@ -18,12 +19,14 @@ Cloud Run 部署:
 ```
 
 #### 2. 省钱到极致
+
 - **免费额度**: 每月 200万次 请求免费
 - **按需付费**: 没人访问 = 不花钱
 - **自动休眠**: 无流量时自动关闭，费用为零
 
 #### 3. 自动扩展
-```
+
+```txt
 用户量少: 1个容器运行
 用户量多: 自动启动更多容器
 没用户: 自动关闭所有容器 (费用为零)
@@ -51,15 +54,63 @@ Cloud Run 部署:
 ### 第二步: 安装工具 (3分钟)
 
 #### macOS 用户:
+
+**方法一: 官方安装包 (推荐，无需Homebrew)**
+
+1. **下载 Google Cloud SDK**:
 ```bash
-# 安装 Google Cloud CLI
+# 下载最新版本 (Intel Mac)
+curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-darwin-x86_64.tar.gz
+
+# 如果是 Apple Silicon Mac (M1/M2)
+curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-darwin-arm.tar.gz
+```
+
+2. **安装和配置**:
+
+```bash
+# 解压到家目录
+tar -xzf google-cloud-cli-darwin-*.tar.gz
+
+# 运行安装脚本
+./google-cloud-sdk/install.sh
+
+# 重启终端或重新加载配置
+source ~/.bash_profile  # 如果使用 bash
+source ~/.zshrc         # 如果使用 zsh
+
+# 初始化认证
+gcloud init
+```
+
+**方法二: 一键安装脚本 (自动化)**
+
+```bash
+# 自动下载并安装
+curl https://sdk.cloud.google.com | bash
+exec -l $SHELL
+gcloud init
+```
+
+**方法三: 如果你有 Homebrew**
+
+```bash
+# 使用Homebrew安装 (需要先安装Homebrew)
 brew install google-cloud-sdk
+```
+
+**安装 Firebase CLI**
+
+```bash
+# 需要先安装 Node.js (如果还没有)
+# 从 https://nodejs.org 下载安装
 
 # 安装 Firebase CLI
 npm install -g firebase-tools
 ```
 
-#### Windows 用户:
+#### Windows 用户
+
 1. 下载 [Google Cloud SDK](https://cloud.google.com/sdk/docs/install)
 2. 运行安装程序
 3. 打开命令提示符，运行: `npm install -g firebase-tools`
@@ -67,12 +118,14 @@ npm install -g firebase-tools
 ### 第三步: 一键部署 (2分钟)
 
 在你的项目目录运行:
+
 ```bash
 # 自动部署脚本
 ./deploy-gcp.sh
 ```
 
 **就这么简单！** 脚本会自动:
+
 - 创建 Google Cloud 项目
 - 部署后端到 Cloud Run
 - 部署前端到 Firebase
@@ -81,7 +134,8 @@ npm install -g firebase-tools
 ### 第四步: 查看结果
 
 部署完成后，你会得到:
-```
+
+```txt
 ✅ 后端API: https://stock-tracker-backend-xxx-uc.a.run.app
 ✅ 前端网站: https://your-project.web.app
 ✅ 免费HTTPS证书
@@ -219,22 +273,40 @@ firebase deploy
 - Firestore (NoSQL 数据库)
 - Cloud Storage (文件存储)
 
-## 🎉 成功案例
+## 🤔 Google Cloud 注册常见问题
 
-使用 Cloud Run 的知名公司:
-- **Spotify** - 音乐流媒体
-- **WhatsApp** - 即时通讯
-- **Airbnb** - 房屋租赁
-- **Twitter** - 社交媒体
+### 注册时会问什么？
 
-你的 Stock Tracker 应用将运行在与这些大公司相同的基础设施上！
+当你注册 Google Cloud 时，可能会遇到这些问题：
 
-## 🔗 有用链接
+**1. "您想用 Google Cloud 做什么？"**
+- 选择: **"构建和部署应用程序"** 
+- 或者: **"学习和实验"**
 
-- [Google Cloud 免费注册](https://cloud.google.com/free)
-- [Cloud Run 文档](https://cloud.google.com/run/docs)
-- [Firebase 控制台](https://console.firebase.google.com)
-- [成本计算器](https://cloud.google.com/products/calculator)
+**2. "您的公司规模是？"**
+- 选择: **"个人开发者"** 或 **"小型企业 (1-10人)"**
+
+**3. "您主要使用什么技术？"**
+- 选择: **"Web 应用"** 和 **"容器"**
+
+**4. "您的项目类型？"**
+- 选择: **"我想使用托管容器构建应用程序"** 
+- 这正好对应 Cloud Run！
+
+**5. "您的预算范围？"**
+- 选择: **"每月 $0-50"** (对于个人项目完全够用)
+
+### 信用卡验证说明
+
+- **不会扣费**: Google 只是验证身份，不会自动扣款
+- **$300 免费额度**: 注册后立即获得，够用很久
+- **免费层**: 即使用完 $300，很多服务仍然免费使用
+
+### 如果没有信用卡怎么办？
+
+1. **借用家人朋友的卡**: 只是验证，不会扣费
+2. **使用虚拟信用卡**: 一些银行提供临时虚拟卡
+3. **等有卡再注册**: Google Cloud 不着急，随时可以注册
 
 ---
 
